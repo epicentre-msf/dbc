@@ -1,0 +1,155 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/"
+)
+options(digits = 4, width = 120)
+```
+
+# dbc: Dictionary-based cleaning
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+<!-- badges: end -->
+
+Tools for creating and applying dictionaries of value-replacement pairs, to
+clean non-valid values of numeric, categorical, or date-type variables within a
+dataset.
+
+### Installation
+
+Install from GitHub with:
+
+```{r, eval=FALSE}
+# install.packages("remotes")
+remotes::install_github("epicentre-msf/dbc")
+```
+
+### Example usage
+
+#### Example datasets and dictionaries
+
+```{r}
+library(dbc)
+data(ll1)
+data(clean_num1)
+data(clean_categ1)
+data(dict_categ1)
+
+ll1 # example messy dataset
+```
+
+
+#### Check and clean numeric variables
+
+##### 1. Produce an initial dictionary of non-valid numeric values
+
+```{r}
+dict_clean_numeric <- check_numeric(
+  ll1,
+  vars = c("age", "contacts"), # cols that should be numeric
+  fn = as.integer              # values not coercible by `fn` are non-valid
+)
+
+dict_clean_numeric
+```
+
+##### 2. Manually review non-valid values and give appropriate replacements, or use keyword ".na" to indicate that the value has been reviewed and cannot be corrected.
+
+Normally one would do this step in a spreadsheet but we'll do it in R here for simplicity.
+
+```{r}
+dict_clean_numeric$replacement <- c(".na", "39", "10", ".na")
+```
+
+##### 3. Use the cleaning dictionary to clean numeric variables
+
+```{r}
+clean_numeric(
+  ll1,
+  vars = c("age", "contacts"),
+  dict_clean = dict_clean_numeric,
+  fn = as.integer
+)
+```
+
+##### 4. If the original dataset is updated, we can repeat the cleaning steps while retaining the corrections already made in the previous cleaning dictionary.
+
+*Check for new non-valid numeric values, after incorporating previous cleaning*
+
+```{r}
+dict_clean_numeric_update <- check_numeric(
+  ll2,                             # same as ll1 but with 3 additional entries
+  vars = c("age", "contacts"),
+  dict_clean = dict_clean_numeric, # incorporate previous cleaning before checking
+  fn = as.integer,
+  return_all = TRUE                # return original cleaning dict + new entries
+)
+
+dict_clean_numeric_update
+```
+
+*Manually specify replacement for new non-valid entry*
+
+```{r}
+dict_clean_numeric_update$replacement[5] <- "6"
+```
+
+*Apply updated cleaning dictionary to updated dataset*
+
+```{r}
+clean_numeric(
+  ll2,
+  vars = c("age", "contacts"),
+  dict_clean = dict_clean_numeric_update,
+  fn = as.integer
+)
+```
+
+
+#### Check and clean categorical variables
+
+##### 1. Produce an initial dictionary of non-valid categorical values
+
+```{r}
+dict_clean_categ <- check_categorical(
+  ll1,
+  dict_allowed = dict_categ1 # dictionary of categorical vars and their allowed values
+)
+
+dict_clean_categ
+```
+
+##### 2. Manually review non-valid values and give appropriate replacements, or use keyword ".na" to indicate that the value has been reviewed and cannot be corrected.
+
+Again, we would normally do this step in a spreadsheet but we do it in R here for simplicity.
+
+```{r}
+dict_clean_categ$replacement <- c(
+  "Years",
+  "Years",
+  "Cured",
+  ".na",
+  "M",
+  ".na",
+  "Suspected"
+)
+```
+
+##### 3. Use the cleaning dictionary to clean categorical variables
+
+```{r}
+clean_categorical(
+  ll1,
+  dict_allowed = dict_categ1,
+  dict_clean = dict_clean_categ
+)
+```
+
+##### 4. If the original dataset is updated, we can repeat the cleaning steps while retaining the corrections already made in the previous cleaning dictionary, as in the example with numeric variables above.
