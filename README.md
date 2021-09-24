@@ -7,6 +7,7 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![R-CMD-check](https://github.com/epicentre-msf/dbc/workflows/R-CMD-check/badge.svg)](https://github.com/epicentre-msf/dbc/actions)
 <!-- badges: end -->
 
 Tools for creating and applying dictionaries of value-replacement pairs,
@@ -24,16 +25,14 @@ remotes::install_github("epicentre-msf/dbc")
 
 ### Example usage
 
-#### Example datasets and dictionaries
+#### Example dataset and dictionary
 
 ``` r
 library(dbc)
-data(ll1)
-data(clean_num1)
-data(clean_categ1)
-data(dict_categ1)
+data(ll1)          # example messy dataset
+data(dict_categ1)  # example dictionary of categorical vars and allowed values
 
-ll1 # example messy dataset
+ll1
 #> # A tibble: 7 × 10
 #>   id    age   age_unit sex   status     contacts date_onset date_admit date_exit  exit_status
 #>   <chr> <chr> <chr>    <chr> <chr>      <chr>    <chr>      <chr>      <chr>      <chr>      
