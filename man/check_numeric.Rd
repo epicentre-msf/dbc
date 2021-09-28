@@ -30,9 +30,9 @@ dictionary contains one entry for each unique combination of variable,
 non-valid value, and ID variable.}
 
 \item{dict_clean}{Optional dictionary of value-replacement pairs (e.g. from a
-previous run of the this function). Must include columns "variable",
-"value", "replacement", and, if specified as an argument, all columns
-specified by \code{vars_id}.}
+previous run of this function). Must include columns "variable", "value",
+"replacement", and, if specified as an argument, all columns specified by
+\code{vars_id}.}
 
 \item{fn}{Function to convert values to numeric. Defaults to \code{\link{as.numeric}}.}
 

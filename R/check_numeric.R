@@ -16,9 +16,9 @@
 #'   dictionary contains one entry for each unique combination of variable,
 #'   non-valid value, and ID variable.
 #' @param dict_clean Optional dictionary of value-replacement pairs (e.g. from a
-#'   previous run of the this function). Must include columns "variable",
-#'   "value", "replacement", and, if specified as an argument, all columns
-#'   specified by `vars_id`.
+#'   previous run of this function). Must include columns "variable", "value",
+#'   "replacement", and, if specified as an argument, all columns specified by
+#'   `vars_id`.
 #' @param fn Function to convert values to numeric. Defaults to [`as.numeric`].
 #' @param na Keyword to use within column "replacement" for values that should
 #'   be converted to `NA`. Defaults to ".na". The keyword is used to distinguish
@@ -141,4 +141,5 @@ check_numeric <- function(x,
   # return
   return(x_out)
 }
+
 

@@ -24,9 +24,9 @@ check_categorical(
 interest. Must include columns "variable" and "value".}
 
 \item{dict_clean}{Optional dictionary of value-replacement pairs (e.g. from a
-previous run of the this function). Must include columns "variable",
-"value", "replacement", and, if specified as an argument, all columns
-specified by \code{vars_id}.}
+previous run of this function). Must include columns "variable", "value",
+"replacement", and, if specified as an argument, all columns specified by
+\code{vars_id}.}
 
 \item{vars_id}{Optional vector of one or more ID columns within \code{x} on which
 corrections should be conditional.
