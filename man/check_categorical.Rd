@@ -69,7 +69,7 @@ values). Columns include:
 \itemize{
 \item columns specified in \code{vars_id}, if given
 \item \code{variable}: column name of variable within \code{x}
-\item \code{value}: non-valid numeric value
+\item \code{value}: non-valid value
 \item \code{replacement}: correct value that should replace a given non-valid value
 \item \code{new}: logical indicating whether the entry is new (TRUE) or already
 specified in argument \code{dict_clean} (\verb{<NA>})

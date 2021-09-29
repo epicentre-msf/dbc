@@ -40,7 +40,7 @@
 #' values). Columns include:
 #' - columns specified in `vars_id`, if given
 #' - `variable`: column name of variable within `x`
-#' - `value`: non-valid numeric value
+#' - `value`: non-valid value
 #' - `replacement`: correct value that should replace a given non-valid value
 #' - `new`: logical indicating whether the entry is new (TRUE) or already
 #' specified in argument `dict_clean` (`<NA>`)
