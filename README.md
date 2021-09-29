@@ -37,9 +37,9 @@ ll1
 #>   id    age   age_unit sex   status     contacts date_onset date_admit date_exit  exit_status
 #>   <chr> <chr> <chr>    <chr> <chr>      <chr>    <chr>      <chr>      <chr>      <chr>      
 #> 1 M143  14    Years    M     Suspected  22       43920      2020-04-01 2021.04.02 <NA>       
-#> 2 M345  8     months   F     ?          ten      43924      43926      43940      SENT HOME  
+#> 2 M345  8     months   F     ?          ten      43924      April 2020 43940      SENT HOME  
 #> 3 M104  29    <NA>     -     confirmed  15       <NA>       03_04_2020 43932      Died       
-#> 4 M623  91    Year     -     Confirmed  <NA>     2020-04-10 2020-04-12 2020-04-30 Cure       
+#> 4 M623  91    Year     -     Confirmed  <NA>     2020-04-10 2020-04-12 Unknown    Cure       
 #> 5 M685  ?     Days     F     suspect    Not sure <NA>       <NA>       43918      <NA>       
 #> 6 M550  39..  Ans      Homme Probable   31       43946      43951      43964      <NA>       
 #> 7 M190  66    Years    M     Not a case 17       24/04/2020 43952      43941      Sent home
@@ -88,9 +88,9 @@ clean_numeric(
 #>   id      age age_unit sex   status     contacts date_onset date_admit date_exit  exit_status
 #>   <chr> <int> <chr>    <chr> <chr>         <int> <chr>      <chr>      <chr>      <chr>      
 #> 1 M143     14 Years    M     Suspected        22 43920      2020-04-01 2021.04.02 <NA>       
-#> 2 M345      8 months   F     ?                10 43924      43926      43940      SENT HOME  
+#> 2 M345      8 months   F     ?                10 43924      April 2020 43940      SENT HOME  
 #> 3 M104     29 <NA>     -     confirmed        15 <NA>       03_04_2020 43932      Died       
-#> 4 M623     91 Year     -     Confirmed        NA 2020-04-10 2020-04-12 2020-04-30 Cure       
+#> 4 M623     91 Year     -     Confirmed        NA 2020-04-10 2020-04-12 Unknown    Cure       
 #> 5 M685     NA Days     F     suspect          NA <NA>       <NA>       43918      <NA>       
 #> 6 M550     39 Ans      Homme Probable         31 43946      43951      43964      <NA>       
 #> 7 M190     66 Years    M     Not a case       17 24/04/2020 43952      43941      Sent home
@@ -140,14 +140,14 @@ clean_numeric(
 #>    id      age age_unit sex   status     contacts date_onset date_admit date_exit  exit_status
 #>    <chr> <int> <chr>    <chr> <chr>         <int> <chr>      <chr>      <chr>      <chr>      
 #>  1 M143     14 Years    M     Suspected        22 43920      2020-04-01 2021.04.02 <NA>       
-#>  2 M345      8 months   F     ?                10 43924      43926      43940      SENT HOME  
+#>  2 M345      8 months   F     ?                10 43924      April 2020 43940      SENT HOME  
 #>  3 M104     29 <NA>     -     confirmed        15 <NA>       03_04_2020 43932      Died       
-#>  4 M623     91 Year     -     Confirmed        NA 2020-04-10 2020-04-12 2020-04-30 Cure       
+#>  4 M623     91 Year     -     Confirmed        NA 2020-04-10 2020-04-12 Unknown    Cure       
 #>  5 M685     NA Days     F     suspect          NA <NA>       <NA>       43918      <NA>       
 #>  6 M550     39 Ans      Homme Probable         31 43946      43951      43964      <NA>       
 #>  7 M190     66 Years    M     Not a case       17 24/04/2020 43952      43941      Sent home  
 #>  8 M443     10 Months   F     Confirmed        26 <NA>       43900      43926      Cured      
-#>  9 M206      6 Years    f     Conf.             7 43921      43923      109691     dead       
+#>  9 M206      6 Years    f     Conf.             7 43921      43923      ?          dead       
 #> 10 M701     56 Years    M     Suspected        39 17-03-2020 20-03-2020 05-04-2020 <NA>
 ```
 
@@ -203,9 +203,9 @@ clean_categorical(
 #>   id    age   age_unit sex   status     contacts date_onset date_admit date_exit  exit_status
 #>   <chr> <chr> <chr>    <chr> <chr>      <chr>    <chr>      <chr>      <chr>      <chr>      
 #> 1 M143  14    Years    M     Suspected  22       43920      2020-04-01 2021.04.02 <NA>       
-#> 2 M345  8     Months   F     <NA>       ten      43924      43926      43940      Sent home  
+#> 2 M345  8     Months   F     <NA>       ten      43924      April 2020 43940      Sent home  
 #> 3 M104  29    <NA>     <NA>  Confirmed  15       <NA>       03_04_2020 43932      Died       
-#> 4 M623  91    Years    <NA>  Confirmed  <NA>     2020-04-10 2020-04-12 2020-04-30 Cured      
+#> 4 M623  91    Years    <NA>  Confirmed  <NA>     2020-04-10 2020-04-12 Unknown    Cured      
 #> 5 M685  ?     Days     F     Suspected  Not sure <NA>       <NA>       43918      <NA>       
 #> 6 M550  39..  Years    M     Probable   31       43946      43951      43964      <NA>       
 #> 7 M190  66    Years    M     Not a case 17       24/04/2020 43952      43941      Sent home

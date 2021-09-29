@@ -54,6 +54,19 @@
 #' }
 "clean_categ1"
 
+#' A cleaning dictionary for categorical variables in example dataset `ll1`
+#'
+#' @format A data.frame with 12 rows and 6 variables:
+#' \describe{
+#' \item{id}{ID column within raw dataset}
+#' \item{variable}{Column name within raw dataset}
+#' \item{value}{Raw date value}
+#' \item{date}{Parsed date value}
+#' \item{replacement}{Replacement value for given non-valid value}
+#' \item{query}{Which query was triggered by the given raw date value (if any)}
+#' }
+"clean_dates1"
+
 #' A dictionary of allowed values for categorical variables in example dataset
 #' `ll1`
 #'

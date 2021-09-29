@@ -1,5 +1,6 @@
 
 utils::globalVariables(c("."))
+utils::globalVariables(c(".x"))
 
 
 #' @noRd
@@ -49,7 +50,7 @@ left_join_replace <- function(x, y, cols_match) {
 reclass_cols <- function(x, cols, fn) {
   fn <- match.fun(fn)
   for (j in cols) {
-    x[[j]] <- fn(x[[j]])
+    x[[j]] <- suppressWarnings(fn(x[[j]]))
   }
   return(x)
 }

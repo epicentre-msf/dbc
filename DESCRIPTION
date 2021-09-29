@@ -21,6 +21,9 @@ Imports:
     janitor,
     lubridate,
     stringi,
-    stats
+    stats,
+    queryr
 Suggests: 
     testthat (>= 3.0.0)
+Remotes:
+    epicentre-msf/queryr
