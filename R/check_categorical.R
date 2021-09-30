@@ -47,13 +47,12 @@ check_categorical <- function(x,
                               populate_na = FALSE,
                               return_all = FALSE) {
 
-
   fn <- match.fun(fn)
-  vars <- unique(dict_allowed$variable)
+  vars <- intersect(unique(dict_allowed$variable), names(x))
 
   # pivot numeric vars to long format
   x_long <- x %>%
-    reclass_cols(cols = .env$vars, fn = as.character) %>%
+    reclass_cols(cols = vars, fn = as.character) %>%
     dplyr::select(dplyr::any_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
     tidyr::pivot_longer(cols = -dplyr::any_of(.env$vars_id), names_to = "variable")
 

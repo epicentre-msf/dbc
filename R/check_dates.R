@@ -105,6 +105,7 @@ check_dates <- function(x,
   # pivot to long form
   x_long_raw <- x %>%
     dplyr::select(dplyr::any_of(.env$vars_id_join), dplyr::all_of(.env$vars)) %>%
+    reclass_cols(cols = vars, fn = as.character) %>%
     tidyr::pivot_longer(cols = -dplyr::any_of(.env$vars_id_join), names_to = "variable")
 
   # apply existing dictionary-based corrections, if specified

@@ -42,7 +42,7 @@ clean_categorical <- function(x,
 
 
   fn <- match.fun(fn)
-  vars <- unique(dict_allowed$variable)
+  vars <- intersect(unique(dict_allowed$variable), names(x))
 
   # validation
   test_dict(dict_clean, fn, na)
@@ -50,7 +50,7 @@ clean_categorical <- function(x,
   # prep x
   x_prep <- x %>%
     mutate(rowid_temp = seq_len(nrow(.)), .before = 1) %>%
-    reclass_cols(cols = .env$vars, fn = as.character)
+    reclass_cols(cols = vars, fn = as.character)
 
   # pivot vars to long format
   x_long <- x_prep %>%

@@ -58,7 +58,7 @@ clean_dates <- function(x,
     # prep x
     x <- x %>%
       mutate(rowid_temp = seq_len(nrow(.)), .before = 1) %>%
-      reclass_cols(cols = .env$vars, fn = as.character)
+      reclass_cols(cols = vars, fn = as.character)
 
     # pivot to long form
     x_long_raw <- x %>%
