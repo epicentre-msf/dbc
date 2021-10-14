@@ -4,9 +4,9 @@
 #' @description
 #' Implements the following transformations:
 #' 1. standardize case (`base::tolower`)
-#' 2. remove sequences of space or punctuation characters at start or end of string
-#' 3. replace repeated whitespace characters with a single space
-#' 4. remove diacritic/accent characters (`stringi::stri_trans_general`)
+#' 2. remove diacritic/accent characters (`stringi::stri_trans_general`)
+#' 3. remove sequences of space or punctuation characters at start or end of string
+#' 4. replace repeated whitespace characters with a single space
 #'
 #' @param x A vector of strings
 #'
@@ -22,7 +22,7 @@
 std_text <- function(x) {
   x %>%
     tolower(.) %>%
+    stringi::stri_trans_general(., id = "Latin-ASCII") %>%
     gsub("^[[:punct:]|[:space:]]+(?=[[:alnum:]])|(?<=[[:alnum:]])[[:punct:]|[:space:]]+$", "", ., perl = TRUE) %>%
-    gsub("\\s+", " ", .) %>%
-    stringi::stri_trans_general(., id = "Latin-ASCII")
+    gsub("\\s+", " ", .)
 }

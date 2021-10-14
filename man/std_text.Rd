@@ -17,9 +17,9 @@ The standardized version of \code{x}
 Implements the following transformations:
 \enumerate{
 \item standardize case (\code{base::tolower})
+\item remove diacritic/accent characters (\code{stringi::stri_trans_general})
 \item remove sequences of space or punctuation characters at start or end of string
 \item replace repeated whitespace characters with a single space
-\item remove diacritic/accent characters (\code{stringi::stri_trans_general})
 }
 }
 \examples{
