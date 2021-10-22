@@ -51,5 +51,19 @@ test_that("check_dates works as expected", {
   )
   expect_true("Missing" %in% x5$replacement)
 
+  # check that multiple queries per element are collapsed to single row
+  ll3 <- dplyr::tibble(id = 1, date = as.Date("2020-01-05"))
+
+  x6 <- check_dates(
+    ll3,
+    vars_id = "id",
+    vars = c("date"),
+    queries = list(
+      .x > as.Date("2020-01-01"),
+      date > as.Date("2020-01-02")
+    )
+  )
+  expect_equal(x6$query, ".x > as.Date(\"2020-01-01\"); date > as.Date(\"2020-01-02\")")
+
 })
 

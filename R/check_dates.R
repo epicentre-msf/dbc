@@ -81,7 +81,7 @@
 #' )
 #'
 #' @importFrom dplyr `%>%` select filter mutate any_of all_of matches bind_rows
-#'   if_else left_join anti_join semi_join
+#'   if_else left_join anti_join semi_join group_by summarize
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom rlang .data .env
 #' @importFrom queryr query
@@ -192,7 +192,9 @@ check_dates <- function(x,
     dplyr::select(.data$query, .data$rowid, dplyr::matches("^variable\\d")) %>%
     tidyr::pivot_longer(cols = -c(.data$query, .data$rowid), values_to = "variable") %>%
     dplyr::select(-.data$name) %>%
-    dplyr::filter(!is.na(.data$variable))
+    dplyr::filter(!is.na(.data$variable)) %>%
+    dplyr::group_by(.data$rowid, .data$variable) %>%
+    dplyr::summarize(query = paste(query, collapse = "; "), .groups = "drop")
 
   # prep output
   x_out <- x_long_parse %>%
