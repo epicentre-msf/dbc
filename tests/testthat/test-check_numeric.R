@@ -9,11 +9,11 @@ test_that("check_numeric works as expected", {
   # test basic
   x1 <- check_numeric(ll1, vars = c("age", "contacts"))
   expect_s3_class(x1, "tbl_df")
-  expect_setequal(names(x1), c("variable", "value", "replacement", "new"))
+  expect_setequal(names(x1), c("variable", "value", "replacement", "query", "new"))
 
   # test arg vars_id
   x2 <- check_numeric(ll1, vars = c("age", "contacts"), vars_id = "id")
-  expect_setequal(names(x2), c("id", "variable", "value", "replacement", "new"))
+  expect_setequal(names(x2), c("id", "variable", "value", "replacement", "query", "new"))
 
   # test arg dict
   x3 <- check_numeric(ll1, vars = c("age", "contacts"), dict_clean = clean_num1)
@@ -32,5 +32,15 @@ test_that("check_numeric works as expected", {
 
   x7 <- check_numeric(ll1, vars = c("age", "contacts"), dict = clean_num1, return_all = FALSE)
   expect_equal(nrow(x7), 0L)
+
+  # test arg queries
+  x8 <- check_numeric(
+    ll1,
+    vars = c("age", "contacts"),
+    queries = list(age > 60),
+    dict = clean_num1
+  )
+  expect_setequal(x8$query, "age > 60")
+
 })
 

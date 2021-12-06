@@ -9,6 +9,7 @@ check_numeric(
   x,
   vars,
   vars_id = NULL,
+  queries = list(),
   dict_clean = NULL,
   fn = as.numeric,
   na = ".na",
@@ -28,6 +29,14 @@ If not specified the cleaning dictionary contains one entry for each unique
 combination of variable and non-valid value. If specified the cleaning
 dictionary contains one entry for each unique combination of variable,
 non-valid value, and ID variable.}
+
+\item{queries}{Optional list of expressions to check for non-valid values.
+May include a \code{.x} selector which is a stand-in for any of the numeric
+variables specified in argument \code{vars}. E.g.\preformatted{list(
+  age > 110,  # age greater than 110
+  .x < 0      # any numeric value less than 0
+)
+}}
 
 \item{dict_clean}{Optional dictionary of value-replacement pairs (e.g. from a
 previous run of this function). Must include columns "variable", "value",
@@ -81,10 +90,13 @@ check_numeric(ll1, c("age", "contacts"))
 # include id var "id"
 check_numeric(ll1, c("age", "contacts"), vars_id = "id")
 
-# don't prepopulate column 'replacement'
-check_numeric(ll1, c("age", "contacts"), vars_id = "id", populate_na = FALSE)
+# add custom query
+check_numeric(ll1, c("age", "contacts"), vars_id = "id", queries = list(age > 90))
+
+# prepopulate column 'replacement'
+check_numeric(ll1, c("age", "contacts"), vars_id = "id", populate_na = TRUE)
 
 # use dictionary of pre-specified corrections
-check_numeric(ll1, c("age", "contacts"), dict_clean = clean_num1, return_all = TRUE)
+check_numeric(ll1, c("age", "contacts"), dict_clean = clean_num1)
 
 }
