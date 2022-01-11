@@ -98,9 +98,12 @@ check_dates <- function(x,
 
   fn <- match.fun(fn)
 
+  # check dict_clean
+  # TODO
+
   # create temp id col
-  x$rowid <- seq_len(nrow(x))
-  vars_id_join <- c("rowid", vars_id)
+  x$ROWID_TEMP_ <- seq_len(nrow(x))
+  vars_id_join <- c("ROWID_TEMP_", vars_id)
 
   # pivot to long form
   x_long_raw <- x %>%
@@ -189,18 +192,18 @@ check_dates <- function(x,
 
   # prepare queries to join
   q_join <- q_full %>%
-    dplyr::select(.data$query, .data$rowid, dplyr::matches("^variable\\d")) %>%
-    tidyr::pivot_longer(cols = -c(.data$query, .data$rowid), values_to = "variable") %>%
+    dplyr::select(.data$query, .data$ROWID_TEMP_, dplyr::matches("^variable\\d")) %>%
+    tidyr::pivot_longer(cols = -c(.data$query, .data$ROWID_TEMP_), values_to = "variable") %>%
     dplyr::select(-.data$name) %>%
     dplyr::filter(!is.na(.data$variable)) %>%
-    dplyr::group_by(.data$rowid, .data$variable) %>%
+    dplyr::group_by(.data$ROWID_TEMP_, .data$variable) %>%
     dplyr::summarize(query = paste(query, collapse = "; "), .groups = "drop")
 
   # prep output
   x_out <- x_long_parse %>%
     dplyr::semi_join(q_full, by = vars_id_join) %>%
-    dplyr::left_join(q_join, by = c("rowid", "variable")) %>%
-    dplyr::select(-.data$rowid)
+    dplyr::left_join(q_join, by = c("ROWID_TEMP_", "variable")) %>%
+    dplyr::select(-.data$ROWID_TEMP_)
 
   # populate na
   if (populate_na) {

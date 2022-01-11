@@ -40,7 +40,6 @@ clean_categorical <- function(x,
                               fn = std_text,
                               na = ".na") {
 
-
   fn <- match.fun(fn)
   vars <- intersect(unique(dict_allowed$variable), names(x))
 
@@ -49,14 +48,14 @@ clean_categorical <- function(x,
 
   # prep x
   x_prep <- x %>%
-    mutate(rowid_temp = seq_len(nrow(.)), .before = 1) %>%
+    mutate(ROWID_TEMP_ = seq_len(nrow(.)), .before = 1) %>%
     reclass_cols(cols = vars, fn = as.character)
 
   # pivot vars to long format
   x_long <- x_prep %>%
-    dplyr::select(.data$rowid_temp, dplyr::any_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
+    dplyr::select(.data$ROWID_TEMP_, dplyr::any_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
     match_coded(dict = dict_allowed) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(c("rowid_temp", .env$vars_id)), names_to = "variable") %>%
+    tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", .env$vars_id)), names_to = "variable") %>%
     dplyr::mutate(value_std = fn(.data$value))
 
   # apply dictionary-specified replacements
@@ -80,12 +79,12 @@ clean_categorical <- function(x,
 
   # pivot corrected numeric vars to wide form
   x_replace_wide <- x_replace %>%
-    tidyr::pivot_wider(id_cols = "rowid_temp", names_from = "variable", values_from = "value")
+    tidyr::pivot_wider(id_cols = "ROWID_TEMP_", names_from = "variable", values_from = "value")
 
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%
-    left_join_replace(x_replace_wide, cols_match = "rowid_temp") %>%
-    dplyr::select(-.data$rowid_temp)
+    left_join_replace(x_replace_wide, cols_match = "ROWID_TEMP_") %>%
+    dplyr::select(-.data$ROWID_TEMP_)
 
   # return
   return(x_out)

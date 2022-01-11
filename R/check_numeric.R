@@ -94,8 +94,8 @@ check_numeric <- function(x,
   fn <- match.fun(fn)
 
   # create temp id col
-  x$ROWID_TEMP <- seq_len(nrow(x))
-  vars_id_join <- c("ROWID_TEMP", vars_id)
+  x$ROWID_TEMP_ <- seq_len(nrow(x))
+  vars_id_join <- c("ROWID_TEMP_", vars_id)
 
   # pivot to long form
   x_long_raw <- x %>%
@@ -183,18 +183,18 @@ check_numeric <- function(x,
 
   # prepare queries to join
   q_join <- q_full %>%
-    dplyr::select(.data$query, .data$ROWID_TEMP, dplyr::matches("^variable\\d")) %>%
-    tidyr::pivot_longer(cols = -c(.data$query, .data$ROWID_TEMP), values_to = "variable") %>%
+    dplyr::select(.data$query, .data$ROWID_TEMP_, dplyr::matches("^variable\\d")) %>%
+    tidyr::pivot_longer(cols = -c(.data$query, .data$ROWID_TEMP_), values_to = "variable") %>%
     dplyr::select(-.data$name) %>%
     dplyr::filter(!is.na(.data$variable)) %>%
-    dplyr::group_by(.data$ROWID_TEMP, .data$variable) %>%
+    dplyr::group_by(.data$ROWID_TEMP_, .data$variable) %>%
     dplyr::summarize(query = paste(query, collapse = "; "), .groups = "drop")
 
   # prep output
   x_out <- x_long_raw %>%
     dplyr::filter(is.na(.data$replacement)) %>%
-    dplyr::inner_join(q_join, by = c("ROWID_TEMP", "variable")) %>%
-    dplyr::select(-.data$ROWID_TEMP) %>%
+    dplyr::inner_join(q_join, by = c("ROWID_TEMP_", "variable")) %>%
+    dplyr::select(-.data$ROWID_TEMP_) %>%
     unique() %>%
     dplyr::mutate(new = TRUE)
 

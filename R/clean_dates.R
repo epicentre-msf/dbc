@@ -57,13 +57,13 @@ clean_dates <- function(x,
 
     # prep x
     x <- x %>%
-      mutate(rowid_temp = seq_len(nrow(.)), .before = 1) %>%
+      mutate(ROWID_TEMP_ = seq_len(nrow(.)), .before = 1) %>%
       reclass_cols(cols = vars, fn = as.character)
 
     # pivot to long form
     x_long_raw <- x %>%
-      dplyr::select(.data$rowid_temp, dplyr::all_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
-      tidyr::pivot_longer(cols = -dplyr::all_of(c("rowid_temp", .env$vars_id)), names_to = "variable")
+      dplyr::select(.data$ROWID_TEMP_, dplyr::all_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
+      tidyr::pivot_longer(cols = -dplyr::all_of(c("ROWID_TEMP_", .env$vars_id)), names_to = "variable")
 
     # prep dict_clean
     dict_clean_std <- dict_clean %>%
@@ -81,9 +81,9 @@ clean_dates <- function(x,
       dplyr::select(-.data$replacement)
 
     x <- x_long_raw %>%
-      tidyr::pivot_wider(id_cols = dplyr::all_of(c("rowid_temp", .env$vars_id)), names_from = "variable", values_from = "value") %>%
-      left_join_replace(x, ., cols_match = c("rowid_temp", vars_id)) %>%
-      dplyr::select(-.data$rowid_temp)
+      tidyr::pivot_wider(id_cols = dplyr::all_of(c("ROWID_TEMP_", .env$vars_id)), names_from = "variable", values_from = "value") %>%
+      left_join_replace(x, ., cols_match = c("ROWID_TEMP_", vars_id)) %>%
+      dplyr::select(-.data$ROWID_TEMP_)
   }
 
   # parse dates in wide form
