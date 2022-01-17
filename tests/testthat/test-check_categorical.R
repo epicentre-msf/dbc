@@ -32,5 +32,22 @@ test_that("check_categorical works as expected", {
 
   x7 <- check_categorical(ll1, dict_categ1, dict_clean = clean_categ1, return_all = FALSE)
   expect_equal(nrow(x7), 0L)
+
+  # test args col_allowed_var and col_allowed_value
+  dict_allowed_custom <- data.frame(
+    col_value = dict_categ1$value,
+    col_variable = dict_categ1$variable
+  )
+
+  x8 <- check_categorical(
+    ll1,
+    dict_allowed_custom,
+    dict_clean = clean_categ1,
+    col_allowed_var   = "col_variable",
+    col_allowed_value = "col_value",
+  )
+
+  expect_setequal(names(x8), c("variable", "value", "replacement", "new"))
+  expect_equal(nrow(x8), 0L)
 })
 

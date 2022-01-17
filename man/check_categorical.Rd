@@ -10,6 +10,8 @@ check_categorical(
   dict_allowed,
   dict_clean = NULL,
   vars_id = NULL,
+  col_allowed_var = "variable",
+  col_allowed_value = "value",
   fn = std_text,
   allow_na = TRUE,
   na = ".na",
@@ -21,7 +23,8 @@ check_categorical(
 \item{x}{A data frame with one or more columns to check}
 
 \item{dict_allowed}{Dictionary of allowed values for each variable of
-interest. Must include columns "variable" and "value".}
+interest. Must include columns for "variable" and "value" (the names of
+which can be modified with args \code{col_allowed_var} and \code{col_allowed_value}).}
 
 \item{dict_clean}{Optional dictionary of value-replacement pairs (e.g. from a
 previous run of this function). Must include columns "variable", "value",
@@ -35,6 +38,12 @@ If not specified the cleaning dictionary contains one entry for each unique
 combination of variable and non-valid value. If specified the cleaning
 dictionary contains one entry for each unique combination of variable,
 non-valid value, and ID variable.}
+
+\item{col_allowed_var}{Name of column in \code{dict_allowed} giving variable name
+(defaults to "variable")}
+
+\item{col_allowed_value}{Name of column in \code{dict_allowed} giving allowed
+values (defaults to "value")}
 
 \item{fn}{Function to standardize raw values in both the dataset and
 dictionary prior to comparing, to account for minor variation in character

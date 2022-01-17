@@ -14,7 +14,12 @@
 #' @inherit check_numeric return
 #'
 #' @param dict_allowed Dictionary of allowed values for each variable of
-#'   interest. Must include columns "variable" and "value".
+#'   interest. Must include columns for "variable" and "value" (the names of
+#'   which can be modified with args `col_allowed_var` and `col_allowed_value`).
+#' @param col_allowed_var Name of column in `dict_allowed` giving variable name
+#'   (defaults to "variable")
+#' @param col_allowed_value Name of column in `dict_allowed` giving allowed
+#'   values (defaults to "value")
 #' @param fn Function to standardize raw values in both the dataset and
 #'   dictionary prior to comparing, to account for minor variation in character
 #'   case, spacing, punctuation, etc. Defaults to [`std_text`]. To omit the
@@ -41,6 +46,8 @@ check_categorical <- function(x,
                               dict_allowed,
                               dict_clean = NULL,
                               vars_id = NULL,
+                              col_allowed_var = "variable",
+                              col_allowed_value = "value",
                               fn = std_text,
                               allow_na = TRUE,
                               na = ".na",
@@ -48,7 +55,7 @@ check_categorical <- function(x,
                               return_all = FALSE) {
 
   fn <- match.fun(fn)
-  vars <- intersect(unique(dict_allowed$variable), names(x))
+  vars <- intersect(unique(dict_allowed[[col_allowed_var]]), names(x))
 
   # pivot numeric vars to long format
   x_long <- x %>%
@@ -88,6 +95,7 @@ check_categorical <- function(x,
 
   # filter to non-valid and non-replaced
   dict_allowed_std <- dict_allowed %>%
+    dplyr::select(variable = .env$col_allowed_var, value = .env$col_allowed_value) %>%
     dplyr::mutate(value = suppressWarnings(fn(.data$value)))
 
   x_nonvalid <- x_long_std %>%

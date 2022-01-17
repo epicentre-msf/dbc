@@ -37,11 +37,13 @@ clean_categorical <- function(x,
                               dict_allowed,
                               dict_clean,
                               vars_id = NULL,
+                              col_allowed_var = "variable",
+                              col_allowed_value = "value",
                               fn = std_text,
                               na = ".na") {
 
   fn <- match.fun(fn)
-  vars <- intersect(unique(dict_allowed$variable), names(x))
+  vars <- intersect(unique(dict_allowed[[col_allowed_var]]), names(x))
 
   # validation
   test_dict(dict_clean, fn, na)
@@ -51,10 +53,14 @@ clean_categorical <- function(x,
     mutate(ROWID_TEMP_ = seq_len(nrow(.)), .before = 1) %>%
     reclass_cols(cols = vars, fn = as.character)
 
+  # prep dict_allowed
+  dict_allowed_std <- dict_allowed %>%
+    dplyr::select(variable = .env$col_allowed_var, value = .env$col_allowed_value)
+
   # pivot vars to long format
   x_long <- x_prep %>%
     dplyr::select(.data$ROWID_TEMP_, dplyr::any_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
-    match_coded(dict = dict_allowed) %>%
+    match_coded(dict = dict_allowed_std) %>%
     tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", .env$vars_id)), names_to = "variable") %>%
     dplyr::mutate(value_std = fn(.data$value))
 
