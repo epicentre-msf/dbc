@@ -17,5 +17,10 @@ test_that("clean_numeric works as expected", {
   x2 <- clean_numeric(ll1, vars = c("age", "contacts"), dict = clean_num1, fn = as.integer)
   expect_is(x2$age, "integer")
   expect_is(x2$contacts, "integer")
+
+  # test with no dictionary-based cleaning
+  x3 <- clean_numeric(ll1, vars = c("age", "contacts"))
+  expect_is(x3$age, "numeric")
+  expect_is(x3$contacts, "numeric")
 })
 

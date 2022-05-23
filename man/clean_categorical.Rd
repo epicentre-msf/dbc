@@ -8,7 +8,7 @@ value-replacement pairs}
 clean_categorical(
   x,
   dict_allowed,
-  dict_clean,
+  dict_clean = NULL,
   vars_id = NULL,
   col_allowed_var = "variable",
   col_allowed_value = "value",
@@ -23,10 +23,13 @@ clean_categorical(
 interest. Must include columns for "variable" and "value" (the names of
 which can be modified with args \code{col_allowed_var} and \code{col_allowed_value}).}
 
-\item{dict_clean}{Dictionary of value-replacement pairs (e.g. produced by
-\code{\link{check_categorical}}). Must include columns "variable", "value",
-"replacement", and, if specified as an argument, all columns specified by
-\code{vars_id}.}
+\item{dict_clean}{Optional dictionary of value-replacement pairs (e.g.
+produced by \code{\link{check_categorical}}). Must include columns "variable",
+"value", "replacement", and, if specified as an argument, all columns
+specified by \code{vars_id}.
+
+If no dictionary is provided, will simply standardize columns to match
+allowed values specified in \code{dict_allowed}.}
 
 \item{vars_id}{Optional vector of one or more ID columns within \code{x} on which
 corrections should be conditional.
@@ -71,6 +74,24 @@ data(dict_categ1)
 data(clean_categ1)
 
 # dictionary-based corrections to categorical vars
-clean_categorical(ll1, dict_allowed = dict_categ1, dict_clean = clean_categ1)
+clean_categorical(
+  ll1,
+  dict_allowed = dict_categ1,
+  dict_clean = clean_categ1
+)
+
+# require exact matching, including character case
+clean_categorical(
+  ll1,
+  dict_allowed = dict_categ1,
+  dict_clean = clean_categ1,
+  fn = identity
+)
+
+# apply standardization to dict_allowed but no additional dict-based cleaning
+clean_categorical(
+  ll1,
+  dict_allowed = dict_categ1
+)
 
 }

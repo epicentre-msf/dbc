@@ -10,10 +10,13 @@
 #' @inheritParams clean_numeric
 #'
 #' @param x A data frame with one or more columns to clean
-#' @param dict_clean Dictionary of value-replacement pairs (e.g. produced by
-#'   [`check_categorical`]). Must include columns "variable", "value",
-#'   "replacement", and, if specified as an argument, all columns specified by
-#'   `vars_id`.
+#' @param dict_clean Optional dictionary of value-replacement pairs (e.g.
+#'   produced by [`check_categorical`]). Must include columns "variable",
+#'   "value", "replacement", and, if specified as an argument, all columns
+#'   specified by `vars_id`.
+#'
+#' If no dictionary is provided, will simply standardize columns to match
+#' allowed values specified in `dict_allowed`.
 #'
 #' @return
 #' The original data frame `x` but with cleaned versions of the categorical
@@ -27,7 +30,25 @@
 #' data(clean_categ1)
 #'
 #' # dictionary-based corrections to categorical vars
-#' clean_categorical(ll1, dict_allowed = dict_categ1, dict_clean = clean_categ1)
+#' clean_categorical(
+#'   ll1,
+#'   dict_allowed = dict_categ1,
+#'   dict_clean = clean_categ1
+#' )
+#'
+#' # require exact matching, including character case
+#' clean_categorical(
+#'   ll1,
+#'   dict_allowed = dict_categ1,
+#'   dict_clean = clean_categ1,
+#'   fn = identity
+#' )
+#'
+#' # apply standardization to dict_allowed but no additional dict-based cleaning
+#' clean_categorical(
+#'   ll1,
+#'   dict_allowed = dict_categ1
+#' )
 #'
 #' @importFrom dplyr `%>%` select filter mutate any_of all_of case_when
 #' @importFrom tidyr pivot_longer pivot_wider
@@ -35,7 +56,7 @@
 #' @export clean_categorical
 clean_categorical <- function(x,
                               dict_allowed,
-                              dict_clean,
+                              dict_clean = NULL,
                               vars_id = NULL,
                               col_allowed_var = "variable",
                               col_allowed_value = "value",
@@ -44,9 +65,6 @@ clean_categorical <- function(x,
 
   fn <- match.fun(fn)
   vars <- intersect(unique(dict_allowed[[col_allowed_var]]), names(x))
-
-  # validation
-  test_dict(dict_clean, fn, na)
 
   # prep x
   x_prep <- x %>%
@@ -60,36 +78,41 @@ clean_categorical <- function(x,
   # pivot vars to long format
   x_long <- x_prep %>%
     dplyr::select(.data$ROWID_TEMP_, dplyr::any_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
-    match_coded(dict = dict_allowed_std) %>%
     tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", .env$vars_id)), names_to = "variable") %>%
     dplyr::mutate(value_std = fn(.data$value))
 
   # apply dictionary-specified replacements
-  join_cols <- c(vars_id, "variable", "value_std")
+  if (!is.null(dict_clean)) {
 
-  dict_clean_join <- dict_clean %>%
-    mutate(value_std = fn(.data$value)) %>%
-    dplyr::select(dplyr::any_of(.env$vars_id), .data$variable, .data$value_std, .data$replacement)
+    test_dict(dict_clean, fn, na)
 
-  x_replace <- x_long %>%
-    dplyr::left_join(dict_clean_join, by = join_cols) %>%
-    dplyr::mutate(
-      value = dplyr::case_when(
-        .data$replacement %in% .env$na ~ NA_character_,
-        !is.na(.data$replacement) ~ .data$replacement,
-        TRUE ~ .data$value
+    join_cols <- c(vars_id, "variable", "value_std")
+
+    dict_clean_join <- dict_clean %>%
+      mutate(value_std = fn(.data$value)) %>%
+      dplyr::select(dplyr::any_of(.env$vars_id), .data$variable, .data$value_std, .data$replacement)
+
+    x_long <- x_long %>%
+      dplyr::left_join(dict_clean_join, by = join_cols) %>%
+      dplyr::mutate(
+        value = dplyr::case_when(
+          .data$replacement %in% .env$na ~ NA_character_,
+          !is.na(.data$replacement) ~ .data$replacement,
+          TRUE ~ .data$value
+        )
       )
-    )
+  }
 
   # TODO: consider option to force remaining non-valid values to NA
 
   # pivot corrected numeric vars to wide form
-  x_replace_wide <- x_replace %>%
-    tidyr::pivot_wider(id_cols = "ROWID_TEMP_", names_from = "variable", values_from = "value")
+  x_long_wide <- x_long %>%
+    tidyr::pivot_wider(id_cols = "ROWID_TEMP_", names_from = "variable", values_from = "value") %>%
+    match_coded(dict = dict_allowed_std)
 
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%
-    left_join_replace(x_replace_wide, cols_match = "ROWID_TEMP_") %>%
+    left_join_replace(x_long_wide, cols_match = "ROWID_TEMP_") %>%
     dplyr::select(-.data$ROWID_TEMP_)
 
   # return

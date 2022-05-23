@@ -28,5 +28,16 @@ test_that("clean_categorical works as expected", {
   )
 
   expect_equal(x1, x2)
+
+  # test with no dictionary-based cleaning
+  x3 <- clean_categorical(
+    ll1,
+    dict_categ1
+  )
+  expect_equal(
+    x3$age_unit,
+    c("Years", "Months", NA, "Year", "Days", "Ans", "Years")
+  )
+
 })
 

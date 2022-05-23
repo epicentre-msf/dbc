@@ -12,10 +12,13 @@
 #'
 #' @param x A data frame with one or more columns to clean
 #' @param vars Names of columns within `x` to clean
-#' @param dict_clean Dictionary of value-replacement pairs (e.g. produced by
-#'   [`check_numeric`]). Must include columns "variable", "value",
-#'   "replacement", and, if specified as an argument, all columns specified by
-#'   `vars_id`.
+#' @param dict_clean Optional dictionary of value-replacement pairs (e.g.
+#'   produced by [`check_numeric`]). If provided, must include columns
+#'   "variable", "value", "replacement", and, if specified as an argument, all
+#'   columns specified by `vars_id`.
+#'
+#' If no dictionary is provided, will simply apply the conversion function to
+#' all columns specified in `vars`.
 #'
 #' @return
 #' The original data frame `x` but with cleaned versions of columns `vars`
@@ -26,7 +29,25 @@
 #' data(clean_num1)
 #'
 #' # dictionary-based corrections to numeric vars 'age' and 'contacts'
-#' clean_numeric(ll1, vars = c("age", "contacts"), dict_clean = clean_num1)
+#' clean_numeric(
+#'   ll1,
+#'   vars = c("age", "contacts"),
+#'   dict_clean = clean_num1
+#' )
+#'
+#' # apply standardization with as.integer() rather than default as.numeric()
+#' clean_numeric(
+#'   ll1,
+#'   vars = c("age", "contacts"),
+#'   dict_clean = clean_num1,
+#'   fn = as.integer
+#' )
+#'
+#' # apply standardization but no dictionary-based cleaning
+#' clean_numeric(
+#'   ll1,
+#'   vars = c("age", "contacts")
+#' )
 #'
 #' @importFrom dplyr `%>%` select filter mutate any_of all_of case_when
 #' @importFrom tidyr pivot_longer pivot_wider
@@ -35,14 +56,11 @@
 clean_numeric <- function(x,
                           vars,
                           vars_id = NULL,
-                          dict_clean,
+                          dict_clean = NULL,
                           fn = as.numeric,
                           na = ".na") {
 
   fn <- match.fun(fn)
-
-  # validation
-  test_dict(dict_clean, fn, na)
 
   # prep x
   x_prep <- x %>%
@@ -55,29 +73,37 @@ clean_numeric <- function(x,
     tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", .env$vars_id)), names_to = "variable")
 
   # apply dictionary-specified replacements
-  join_cols <- c(vars_id, "variable", "value")
+  if (!is.null(dict_clean)) {
 
-  dict_clean_join <- dict_clean %>%
-    dplyr::select(dplyr::any_of(.env$vars_id), .data$variable, .data$value, .data$replacement)
+    test_dict(dict_clean, fn, na)
 
-  x_replace <- x_long %>%
-    dplyr::left_join(dict_clean_join, by = join_cols) %>%
-    dplyr::mutate(
-      value = dplyr::case_when(
-        .data$replacement %in% .env$na ~ NA_character_,
-        !is.na(.data$replacement) ~ .data$replacement,
-        TRUE ~ .data$value
-      ),
-      value = suppressWarnings(fn(.data$value))
-    )
+    join_cols <- c(vars_id, "variable", "value")
+
+    dict_clean_join <- dict_clean %>%
+      dplyr::select(dplyr::any_of(.env$vars_id), .data$variable, .data$value, .data$replacement)
+
+    x_long <- x_long %>%
+      dplyr::left_join(dict_clean_join, by = join_cols) %>%
+      dplyr::mutate(
+        value = dplyr::case_when(
+          .data$replacement %in% .env$na ~ NA_character_,
+          !is.na(.data$replacement) ~ .data$replacement,
+          TRUE ~ .data$value
+        )
+      ) %>%
+      dplyr::select(-.data$replacement)
+  }
+
+  # apply conversion function (i.e. default is as.numeric())
+  x_long$value <- suppressWarnings(fn(x_long$value))
 
   # pivot corrected numeric vars to wide form
-  x_replace_wide <- x_replace %>%
+  x_long_wide <- x_long %>%
     tidyr::pivot_wider(id_cols = "ROWID_TEMP_", names_from = "variable", values_from = "value")
 
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%
-    left_join_replace(x_replace_wide, cols_match = "ROWID_TEMP_") %>%
+    left_join_replace(x_long_wide, cols_match = "ROWID_TEMP_") %>%
     dplyr::select(-.data$ROWID_TEMP_)
 
   # return

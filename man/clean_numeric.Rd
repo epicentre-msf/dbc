@@ -5,7 +5,14 @@
 \title{Clean numeric variables within a dataset based on a dictionary of
 value-replacement pairs}
 \usage{
-clean_numeric(x, vars, vars_id = NULL, dict_clean, fn = as.numeric, na = ".na")
+clean_numeric(
+  x,
+  vars,
+  vars_id = NULL,
+  dict_clean = NULL,
+  fn = as.numeric,
+  na = ".na"
+)
 }
 \arguments{
 \item{x}{A data frame with one or more columns to clean}
@@ -20,10 +27,13 @@ combination of variable and non-valid value. If specified the cleaning
 dictionary contains one entry for each unique combination of variable,
 non-valid value, and ID variable.}
 
-\item{dict_clean}{Dictionary of value-replacement pairs (e.g. produced by
-\code{\link{check_numeric}}). Must include columns "variable", "value",
-"replacement", and, if specified as an argument, all columns specified by
-\code{vars_id}.}
+\item{dict_clean}{Optional dictionary of value-replacement pairs (e.g.
+produced by \code{\link{check_numeric}}). If provided, must include columns
+"variable", "value", "replacement", and, if specified as an argument, all
+columns specified by \code{vars_id}.
+
+If no dictionary is provided, will simply apply the conversion function to
+all columns specified in \code{vars}.}
 
 \item{fn}{Function to convert values to numeric. Defaults to \code{\link{as.numeric}}.}
 
@@ -49,6 +59,24 @@ data(ll1)
 data(clean_num1)
 
 # dictionary-based corrections to numeric vars 'age' and 'contacts'
-clean_numeric(ll1, vars = c("age", "contacts"), dict_clean = clean_num1)
+clean_numeric(
+  ll1,
+  vars = c("age", "contacts"),
+  dict_clean = clean_num1
+)
+
+# apply standardization with as.integer() rather than default as.numeric()
+clean_numeric(
+  ll1,
+  vars = c("age", "contacts"),
+  dict_clean = clean_num1,
+  fn = as.integer
+)
+
+# apply standardization but no dictionary-based cleaning
+clean_numeric(
+  ll1,
+  vars = c("age", "contacts")
+)
 
 }
