@@ -108,7 +108,7 @@ clean_categorical <- function(x,
   # pivot corrected numeric vars to wide form
   x_long_wide <- x_long %>%
     tidyr::pivot_wider(id_cols = "ROWID_TEMP_", names_from = "variable", values_from = "value") %>%
-    match_coded(dict = dict_allowed_std)
+    match_coded(dict = dict_allowed_std, fn = fn)
 
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%

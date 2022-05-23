@@ -36,7 +36,19 @@ test_that("clean_categorical works as expected", {
   )
   expect_equal(
     x3$age_unit,
-    c("Years", "Months", NA, "Year", "Days", "Ans", "Years")
+    c("Years", "Months", NA, NA, "Days", NA, "Years")
+  )
+
+  # test that matching is case-sensitive when fn = identity
+  # i.e. age_unit "months" will not match "Months"
+  x4 <- clean_categorical(
+    ll1,
+    dict_categ1,
+    fn = identity
+  )
+  expect_equal(
+    x4$age_unit,
+    c("Years", NA, NA, NA, "Days", NA, "Years")
   )
 
 })
