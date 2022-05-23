@@ -86,7 +86,7 @@ match_coded_vec <- function(x, allowed, fn) {
 
   df_match <- dplyr::tibble(x_unique, x_unique_std) %>%
     dplyr::mutate(allowed_match = .env$allowed[match(.data$x_unique_std, .env$allowed_std)]) %>%
-    dplyr::filter(!is.na(.data$allowed_match))
+    dplyr::filter(!is.na(.data$x_unique))
 
   out <- if (nrow(df_match)) {
     dplyr::recode(x, !!!stats::setNames(df_match$allowed_match, df_match$x_unique))
