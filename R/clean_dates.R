@@ -62,28 +62,28 @@ clean_dates <- function(x,
 
     # pivot to long form
     x_long_raw <- x %>%
-      dplyr::select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
-      tidyr::pivot_longer(cols = -dplyr::all_of(c("ROWID_TEMP_", vars_id)), names_to = "variable")
+      select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
+      tidyr::pivot_longer(cols = -all_of(c("ROWID_TEMP_", vars_id)), names_to = "variable")
 
     # prep dict_clean
     dict_clean_std <- dict_clean %>%
-      dplyr::filter(!is.na(.data$replacement)) %>%
-      dplyr::select(dplyr::any_of(vars_id), all_of(c("variable", "value", "replacement"))) %>%
-      dplyr::mutate(replacement = as.character(.data$replacement))
+      filter(!is.na(.data$replacement)) %>%
+      select(any_of(vars_id), all_of(c("variable", "value", "replacement"))) %>%
+      mutate(replacement = as.character(.data$replacement))
 
     # apply corrections
     x_long_raw <- x_long_raw %>%
-      dplyr::left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
-      dplyr::mutate(
-        value = dplyr::if_else(!is.na(.data$replacement), .data$replacement, .data$value),
-        value = dplyr::if_else(.data$value %in% .env$na, NA_character_, .data$value)
+      left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
+      mutate(
+        value = if_else(!is.na(.data$replacement), .data$replacement, .data$value),
+        value = if_else(.data$value %in% .env$na, NA_character_, .data$value)
       ) %>%
-      dplyr::select(!all_of("replacement"))
+      select(!all_of("replacement"))
 
     x <- x_long_raw %>%
-      tidyr::pivot_wider(id_cols = dplyr::all_of(c("ROWID_TEMP_", vars_id)), names_from = "variable", values_from = "value") %>%
+      tidyr::pivot_wider(id_cols = all_of(c("ROWID_TEMP_", vars_id)), names_from = "variable", values_from = "value") %>%
       left_join_replace(x, ., cols_match = c("ROWID_TEMP_", vars_id)) %>%
-      dplyr::select(!all_of("ROWID_TEMP_"))
+      select(!all_of("ROWID_TEMP_"))
   }
 
   # parse dates in wide form

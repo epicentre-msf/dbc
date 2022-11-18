@@ -107,30 +107,30 @@ check_dates <- function(x,
 
   # pivot to long form
   x_long_raw <- x %>%
-    dplyr::select(dplyr::any_of(vars_id_join), dplyr::all_of(vars)) %>%
+    select(any_of(vars_id_join), all_of(vars)) %>%
     reclass_cols(cols = vars, fn = as.character) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(vars_id_join), names_to = "variable")
+    tidyr::pivot_longer(cols = -any_of(vars_id_join), names_to = "variable")
 
   # apply existing dictionary-based corrections, if specified
   if (!is.null(dict_clean)) {
 
     # prep dict_clean
     dict_clean_std <- dict_clean %>%
-      dplyr::filter(!is.na(.data$replacement)) %>%
-      dplyr::select(dplyr::any_of(vars_id_join), all_of(c("variable", "value", "replacement"))) %>%
-      dplyr::mutate(replacement = as.character(.data$replacement))
+      filter(!is.na(.data$replacement)) %>%
+      select(any_of(vars_id_join), all_of(c("variable", "value", "replacement"))) %>%
+      mutate(replacement = as.character(.data$replacement))
 
     # apply corrections
     x_long_raw <- x_long_raw %>%
-      dplyr::left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
-      dplyr::mutate(
-        value = dplyr::if_else(!is.na(.data$replacement), .data$replacement, .data$value),
-        value = dplyr::if_else(.data$value %in% .env$na, NA_character_, .data$value)
+      left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
+      mutate(
+        value = if_else(!is.na(.data$replacement), .data$replacement, .data$value),
+        value = if_else(.data$value %in% .env$na, NA_character_, .data$value)
       ) %>%
-      dplyr::select(!all_of("replacement"))
+      select(!all_of("replacement"))
 
     x <- x_long_raw %>%
-      tidyr::pivot_wider(id_cols = dplyr::any_of(vars_id_join), names_from = "variable", values_from = "value") %>%
+      tidyr::pivot_wider(id_cols = any_of(vars_id_join), names_from = "variable", values_from = "value") %>%
       left_join_replace(x, ., cols_match = vars_id_join)
   }
 
@@ -140,7 +140,7 @@ check_dates <- function(x,
 
   # parse dates in long-form
   x_long_parse <- x_long_raw %>%
-    dplyr::mutate(date = suppressWarnings(fn(.data$value)), replacement = NA_character_)
+    mutate(date = suppressWarnings(fn(.data$value)), replacement = NA_character_)
 
   # parse query expressions
   queries_chr <- vapply(substitute(queries), function (x) deparse(x, width.cutoff = 500L), "")
@@ -157,8 +157,8 @@ check_dates <- function(x,
   q_nonvalid <- queryr::query(
     data = x,
     !is.na(.x) & is.na(fn(.x)),
-    cols_dotx = dplyr::all_of(vars),
-    cols_base = dplyr::all_of(vars_id_join)
+    cols_dotx = all_of(vars),
+    cols_base = all_of(vars_id_join)
   ) %>%
     list() %>%
     stats::setNames("Non-valid date")
@@ -188,28 +188,28 @@ check_dates <- function(x,
   }
 
   # combine all queries
-  q_full <- dplyr::bind_rows(c(q_dotx, q_no_dotx, q_nonvalid), .id = "query")
+  q_full <- bind_rows(c(q_dotx, q_no_dotx, q_nonvalid), .id = "query")
 
   # prepare queries to join
   q_join <- q_full %>%
-    dplyr::select(all_of(c("query", "ROWID_TEMP_")), dplyr::matches("^variable\\d")) %>%
+    select(all_of(c("query", "ROWID_TEMP_")), matches("^variable\\d")) %>%
     tidyr::pivot_longer(cols = !all_of(c("query", "ROWID_TEMP_")), values_to = "variable") %>%
-    dplyr::select(!all_of(c("name"))) %>%
-    dplyr::filter(!is.na(.data$variable)) %>%
-    dplyr::group_by(.data$ROWID_TEMP_, .data$variable) %>%
-    dplyr::summarize(query = paste(query, collapse = "; "), .groups = "drop")
+    select(!all_of(c("name"))) %>%
+    filter(!is.na(.data$variable)) %>%
+    group_by(.data$ROWID_TEMP_, .data$variable) %>%
+    summarize(query = paste(query, collapse = "; "), .groups = "drop")
 
   # prep output
   x_out <- x_long_parse %>%
-    dplyr::semi_join(q_full, by = vars_id_join) %>%
-    dplyr::left_join(q_join, by = c("ROWID_TEMP_", "variable")) %>%
-    dplyr::select(!all_of(c("ROWID_TEMP_")))
+    semi_join(q_full, by = vars_id_join) %>%
+    left_join(q_join, by = c("ROWID_TEMP_", "variable")) %>%
+    select(!all_of(c("ROWID_TEMP_")))
 
   # populate na
   if (populate_na) {
     x_out <- x_out %>%
-      dplyr::mutate(
-        replacement = dplyr::if_else(
+      mutate(
+        replacement = if_else(
           .data$query %in% "Non-valid date",
           .env$na,
           NA_character_

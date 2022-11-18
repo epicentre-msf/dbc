@@ -60,22 +60,22 @@ check_categorical <- function(x,
   # pivot numeric vars to long format
   x_long <- x %>%
     reclass_cols(cols = vars, fn = as.character) %>%
-    dplyr::select(dplyr::any_of(vars_id), dplyr::all_of(vars)) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(vars_id), names_to = "variable")
+    select(any_of(vars_id), all_of(vars)) %>%
+    tidyr::pivot_longer(cols = -any_of(vars_id), names_to = "variable")
 
   # standardize
   x_long_std <- x_long %>%
-    dplyr::mutate(value = suppressWarnings(fn(.data$value)))
+    mutate(value = suppressWarnings(fn(.data$value)))
 
   # apply existing dictionary-based corrections, if specified
   if (!is.null(dict_clean)) {
 
     # prep dict
     dict_clean_std <- dict_clean %>%
-      dplyr::select(dplyr::any_of(vars_id), all_of(c("variable", "value", "replacement"))) %>%
-      dplyr::filter(!is.na(.data$replacement)) %>%
-      dplyr::mutate(
-        replacement = dplyr::case_when(
+      select(any_of(vars_id), all_of(c("variable", "value", "replacement"))) %>%
+      filter(!is.na(.data$replacement)) %>%
+      mutate(
+        replacement = case_when(
           replacement %in% .env$na ~ .env$na,
           TRUE ~ suppressWarnings(fn(.data$replacement))
         )
@@ -83,10 +83,10 @@ check_categorical <- function(x,
 
     # apply corrections
     x_long_std <- x_long_std %>%
-      dplyr::left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
-      dplyr::mutate(
-        value = dplyr::if_else(!is.na(.data$replacement), .data$replacement, .data$value),
-        value = dplyr::if_else(.data$replacement %in% .env$na, NA_character_, .data$value)
+      left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
+      mutate(
+        value = if_else(!is.na(.data$replacement), .data$replacement, .data$value),
+        value = if_else(.data$replacement %in% .env$na, NA_character_, .data$value)
       )
   } else {
     x_long_std$replacement <- NA_character_
@@ -94,12 +94,12 @@ check_categorical <- function(x,
 
   # filter to non-valid and non-replaced
   dict_allowed_std <- dict_allowed %>%
-    dplyr::select(variable = all_of(col_allowed_var), value = all_of(col_allowed_value)) %>%
-    dplyr::mutate(value = suppressWarnings(fn(.data$value)))
+    select(variable = all_of(col_allowed_var), value = all_of(col_allowed_value)) %>%
+    mutate(value = suppressWarnings(fn(.data$value)))
 
   x_nonvalid <- x_long_std %>%
-    dplyr::anti_join(dict_allowed_std, by = c("variable", "value")) %>%
-    dplyr::filter(is.na(.data$replacement))
+    anti_join(dict_allowed_std, by = c("variable", "value")) %>%
+    filter(is.na(.data$replacement))
 
   if (allow_na) {
     x_nonvalid <- x_nonvalid %>%
@@ -110,13 +110,13 @@ check_categorical <- function(x,
   replacement_prepopulate <- ifelse(populate_na, na, NA_character_)
 
   x_out <- x_nonvalid %>%
-    dplyr::select(
-      dplyr::any_of(vars_id),
+    select(
+      any_of(vars_id),
       all_of(c("variable", "value"))
     ) %>%
-    dplyr::arrange(.data$variable) %>%
-    dplyr::distinct() %>%
-    dplyr::mutate(
+    arrange(.data$variable) %>%
+    distinct() %>%
+    mutate(
       replacement = .env$replacement_prepopulate,
       new = TRUE
     )
@@ -125,11 +125,11 @@ check_categorical <- function(x,
   if (return_all & !is.null(dict_clean)) {
 
     x_out_new <- x_out %>%
-      dplyr::anti_join(dict_clean, by = c(vars_id, "variable", "value"))
+      anti_join(dict_clean, by = c(vars_id, "variable", "value"))
 
     x_out <- dict_clean %>%
-      dplyr::mutate(new = as.logical(NA)) %>%
-      dplyr::bind_rows(x_out_new)
+      mutate(new = as.logical(NA)) %>%
+      bind_rows(x_out_new)
   }
 
   # return

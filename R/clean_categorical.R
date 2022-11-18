@@ -73,13 +73,13 @@ clean_categorical <- function(x,
 
   # prep dict_allowed
   dict_allowed_std <- dict_allowed %>%
-    dplyr::select(variable = all_of(col_allowed_var), value = all_of(col_allowed_value))
+    select(variable = all_of(col_allowed_var), value = all_of(col_allowed_value))
 
   # pivot vars to long format
   x_long <- x_prep %>%
-    dplyr::select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", vars_id)), names_to = "variable") %>%
-    dplyr::mutate(value_std = fn(.data$value))
+    select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
+    tidyr::pivot_longer(cols = -any_of(c("ROWID_TEMP_", vars_id)), names_to = "variable") %>%
+    mutate(value_std = fn(.data$value))
 
   # apply dictionary-specified replacements
   if (!is.null(dict_clean)) {
@@ -90,13 +90,13 @@ clean_categorical <- function(x,
 
     dict_clean_join <- dict_clean %>%
       mutate(value_std = fn(.data$value)) %>%
-      dplyr::select(dplyr::any_of(vars_id), all_of(c("variable", "value_std", "replacement"))) %>%
+      select(any_of(vars_id), all_of(c("variable", "value_std", "replacement"))) %>%
       unique()
 
     x_long <- x_long %>%
-      dplyr::left_join(dict_clean_join, by = join_cols) %>%
-      dplyr::mutate(
-        value = dplyr::case_when(
+      left_join(dict_clean_join, by = join_cols) %>%
+      mutate(
+        value = case_when(
           .data$replacement %in% .env$na ~ NA_character_,
           !is.na(.data$replacement) ~ .data$replacement,
           TRUE ~ .data$value
@@ -114,7 +114,7 @@ clean_categorical <- function(x,
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%
     left_join_replace(x_long_wide, cols_match = "ROWID_TEMP_") %>%
-    dplyr::select(!all_of("ROWID_TEMP_"))
+    select(!all_of("ROWID_TEMP_"))
 
   # return
   return(x_out)

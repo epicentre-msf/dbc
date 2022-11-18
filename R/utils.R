@@ -32,7 +32,7 @@ paste_collapse <- function(x, quote = TRUE, collapse = ", ") {
 #' Add columns in y to x, by = cols_match, overwriting any common columns
 #' @noRd
 #' @importFrom dplyr `%>%` select left_join all_of
-#' @importFrom rlang !!!
+#' @importFrom rlang `!!!`
 left_join_replace <- function(x, y, cols_match) {
 
   cols_orig_x <- names(x)
@@ -40,9 +40,9 @@ left_join_replace <- function(x, y, cols_match) {
   cols_keep <- setdiff(names(x), cols_replace)
 
   x %>%
-    dplyr::select(!!!cols_keep) %>%
-    dplyr::left_join(y, by = cols_match) %>%
-    dplyr::select(dplyr::all_of(cols_orig_x))
+    select(!!!cols_keep) %>%
+    left_join(y, by = cols_match) %>%
+    select(all_of(cols_orig_x))
 }
 
 
@@ -75,7 +75,7 @@ match_coded <- function(x, dict, col_var = 1, col_val = 2, fn = std_text) {
 
 #' @noRd
 #' @importFrom dplyr tibble mutate filter recode
-#' @importFrom rlang !!! .data
+#' @importFrom rlang `!!!` .data
 match_coded_vec <- function(x, allowed, fn) {
 
   fn <- match.fun(fn)
@@ -84,12 +84,12 @@ match_coded_vec <- function(x, allowed, fn) {
   x_unique_std <-  fn(x_unique)
   allowed_std <-  fn(allowed)
 
-  df_match <- dplyr::tibble(x_unique, x_unique_std) %>%
-    dplyr::mutate(allowed_match = .env$allowed[match(.data$x_unique_std, .env$allowed_std)]) %>%
-    dplyr::filter(!is.na(.data$x_unique))
+  df_match <- tibble(x_unique, x_unique_std) %>%
+    mutate(allowed_match = .env$allowed[match(.data$x_unique_std, .env$allowed_std)]) %>%
+    filter(!is.na(.data$x_unique))
 
   out <- if (nrow(df_match)) {
-    dplyr::recode(x, !!!stats::setNames(df_match$allowed_match, df_match$x_unique))
+    recode(x, !!!stats::setNames(df_match$allowed_match, df_match$x_unique))
   } else {
     x
   }

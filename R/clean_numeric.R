@@ -69,8 +69,8 @@ clean_numeric <- function(x,
 
   # pivot numeric vars to long format
   x_long <- x_prep %>%
-    dplyr::select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", vars_id)), names_to = "variable")
+    select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
+    tidyr::pivot_longer(cols = -any_of(c("ROWID_TEMP_", vars_id)), names_to = "variable")
 
   # apply dictionary-specified replacements
   if (!is.null(dict_clean)) {
@@ -80,18 +80,18 @@ clean_numeric <- function(x,
     join_cols <- c(vars_id, "variable", "value")
 
     dict_clean_join <- dict_clean %>%
-      dplyr::select(dplyr::any_of(vars_id), all_of(c("variable", "value", "replacement")))
+      select(any_of(vars_id), all_of(c("variable", "value", "replacement")))
 
     x_long <- x_long %>%
-      dplyr::left_join(dict_clean_join, by = join_cols) %>%
-      dplyr::mutate(
-        value = dplyr::case_when(
+      left_join(dict_clean_join, by = join_cols) %>%
+      mutate(
+        value = case_when(
           .data$replacement %in% .env$na ~ NA_character_,
           !is.na(.data$replacement) ~ .data$replacement,
           TRUE ~ .data$value
         )
       ) %>%
-      dplyr::select(!all_of("replacement"))
+      select(!all_of("replacement"))
   }
 
   # apply conversion function (i.e. default is as.numeric())
@@ -104,7 +104,7 @@ clean_numeric <- function(x,
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%
     left_join_replace(x_long_wide, cols_match = "ROWID_TEMP_") %>%
-    dplyr::select(!all_of("ROWID_TEMP_"))
+    select(!all_of("ROWID_TEMP_"))
 
   # return
   return(x_out)

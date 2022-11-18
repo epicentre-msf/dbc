@@ -75,7 +75,7 @@
 #' check_numeric(ll1, c("age", "contacts"), dict_clean = clean_num1)
 #'
 #' @importFrom dplyr `%>%` select filter mutate any_of all_of matches bind_rows
-#'   if_else left_join anti_join semi_join group_by summarize
+#'   if_else left_join inner_join anti_join group_by summarize
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom rlang .data .env
 #' @importFrom queryr query
@@ -99,30 +99,30 @@ check_numeric <- function(x,
 
   # pivot to long form
   x_long_raw <- x %>%
-    dplyr::select(dplyr::any_of(vars_id_join), dplyr::all_of(vars)) %>%
+    select(any_of(vars_id_join), all_of(vars)) %>%
     reclass_cols(cols = vars, fn = as.character) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(vars_id_join), names_to = "variable")
+    tidyr::pivot_longer(cols = -any_of(vars_id_join), names_to = "variable")
 
   # apply existing dictionary-based corrections, if specified
   if (!is.null(dict_clean)) {
 
     # prep dict_clean
     dict_clean_std <- dict_clean %>%
-      dplyr::filter(!is.na(.data$replacement)) %>%
-      dplyr::select(dplyr::any_of(vars_id_join), all_of(c("variable", "value", "replacement"))) %>%
-      dplyr::mutate(replacement = as.character(.data$replacement))
+      filter(!is.na(.data$replacement)) %>%
+      select(any_of(vars_id_join), all_of(c("variable", "value", "replacement"))) %>%
+      mutate(replacement = as.character(.data$replacement))
 
     # apply corrections
     x_long_raw <- x_long_raw %>%
-      dplyr::left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
-      dplyr::mutate(
-        value = dplyr::if_else(!is.na(.data$replacement), .data$replacement, .data$value),
-        value = dplyr::if_else(.data$value %in% .env$na, NA_character_, .data$value)
+      left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
+      mutate(
+        value = if_else(!is.na(.data$replacement), .data$replacement, .data$value),
+        value = if_else(.data$value %in% .env$na, NA_character_, .data$value)
       )
 
     x <- x_long_raw %>%
-      dplyr::select(!all_of("replacement")) %>%
-      tidyr::pivot_wider(id_cols = dplyr::any_of(vars_id_join), names_from = "variable", values_from = "value") %>%
+      select(!all_of("replacement")) %>%
+      tidyr::pivot_wider(id_cols = any_of(vars_id_join), names_from = "variable", values_from = "value") %>%
       left_join_replace(x, ., cols_match = vars_id_join)
 
   } else {
@@ -148,8 +148,8 @@ check_numeric <- function(x,
   q_nonvalid <- queryr::query(
     data = x,
     !is.na(.x) & is.na(suppressWarnings(fn(.x))),
-    cols_dotx = dplyr::all_of(vars),
-    cols_base = dplyr::all_of(vars_id_join)
+    cols_dotx = all_of(vars),
+    cols_base = all_of(vars_id_join)
   ) %>%
     list() %>%
     stats::setNames("Non-valid number")
@@ -179,30 +179,30 @@ check_numeric <- function(x,
   }
 
   # combine all queries
-  q_full <- dplyr::bind_rows(c(q_dotx, q_no_dotx, q_nonvalid), .id = "query")
+  q_full <- bind_rows(c(q_dotx, q_no_dotx, q_nonvalid), .id = "query")
 
   # prepare queries to join
   q_join <- q_full %>%
-    dplyr::select(all_of(c("query", "ROWID_TEMP_")), dplyr::matches("^variable\\d")) %>%
+    select(all_of(c("query", "ROWID_TEMP_")), matches("^variable\\d")) %>%
     tidyr::pivot_longer(cols = !all_of(c("query", "ROWID_TEMP_")), values_to = "variable") %>%
-    dplyr::select(!all_of("name")) %>%
-    dplyr::filter(!is.na(.data$variable)) %>%
-    dplyr::group_by(.data$ROWID_TEMP_, .data$variable) %>%
-    dplyr::summarize(query = paste(.data$query, collapse = "; "), .groups = "drop")
+    select(!all_of("name")) %>%
+    filter(!is.na(.data$variable)) %>%
+    group_by(.data$ROWID_TEMP_, .data$variable) %>%
+    summarize(query = paste(.data$query, collapse = "; "), .groups = "drop")
 
   # prep output
   x_out <- x_long_raw %>%
-    dplyr::filter(is.na(.data$replacement)) %>%
-    dplyr::inner_join(q_join, by = c("ROWID_TEMP_", "variable")) %>%
-    dplyr::select(!all_of("ROWID_TEMP_")) %>%
+    filter(is.na(.data$replacement)) %>%
+    inner_join(q_join, by = c("ROWID_TEMP_", "variable")) %>%
+    select(!all_of("ROWID_TEMP_")) %>%
     unique() %>%
-    dplyr::mutate(new = TRUE)
+    mutate(new = TRUE)
 
   # populate na
   if (populate_na) {
     x_out <- x_out %>%
-      dplyr::mutate(
-        replacement = dplyr::if_else(
+      mutate(
+        replacement = if_else(
           .data$query %in% "Non-valid number",
           .env$na,
           NA_character_
@@ -214,14 +214,14 @@ check_numeric <- function(x,
   if (return_all & !is.null(dict_clean)) {
 
     x_out_new <- x_out %>%
-      dplyr::anti_join(dict_clean, by = c(vars_id, "variable", "value"))
+      anti_join(dict_clean, by = c(vars_id, "variable", "value"))
 
     x_out <- dict_clean %>%
-      dplyr::mutate(
+      mutate(
         replacement = as.character(.data$replacement),
         new = as.logical(NA)
       ) %>%
-      dplyr::bind_rows(x_out_new)
+      bind_rows(x_out_new)
   }
 
   # return
