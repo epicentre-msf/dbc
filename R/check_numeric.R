@@ -99,9 +99,9 @@ check_numeric <- function(x,
 
   # pivot to long form
   x_long_raw <- x %>%
-    dplyr::select(dplyr::any_of(.env$vars_id_join), dplyr::all_of(.env$vars)) %>%
+    dplyr::select(dplyr::any_of(vars_id_join), dplyr::all_of(vars)) %>%
     reclass_cols(cols = vars, fn = as.character) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(.env$vars_id_join), names_to = "variable")
+    tidyr::pivot_longer(cols = -dplyr::any_of(vars_id_join), names_to = "variable")
 
   # apply existing dictionary-based corrections, if specified
   if (!is.null(dict_clean)) {
@@ -109,7 +109,7 @@ check_numeric <- function(x,
     # prep dict_clean
     dict_clean_std <- dict_clean %>%
       dplyr::filter(!is.na(.data$replacement)) %>%
-      dplyr::select(dplyr::any_of(.env$vars_id_join), .data$variable, .data$value, .data$replacement) %>%
+      dplyr::select(dplyr::any_of(vars_id_join), all_of(c("variable", "value", "replacement"))) %>%
       dplyr::mutate(replacement = as.character(.data$replacement))
 
     # apply corrections
@@ -121,8 +121,8 @@ check_numeric <- function(x,
       )
 
     x <- x_long_raw %>%
-      dplyr::select(-.data$replacement) %>%
-      tidyr::pivot_wider(id_cols = dplyr::any_of(.env$vars_id_join), names_from = "variable", values_from = "value") %>%
+      dplyr::select(!all_of("replacement")) %>%
+      tidyr::pivot_wider(id_cols = dplyr::any_of(vars_id_join), names_from = "variable", values_from = "value") %>%
       left_join_replace(x, ., cols_match = vars_id_join)
 
   } else {
@@ -183,9 +183,9 @@ check_numeric <- function(x,
 
   # prepare queries to join
   q_join <- q_full %>%
-    dplyr::select(.data$query, .data$ROWID_TEMP_, dplyr::matches("^variable\\d")) %>%
-    tidyr::pivot_longer(cols = -c(.data$query, .data$ROWID_TEMP_), values_to = "variable") %>%
-    dplyr::select(-.data$name) %>%
+    dplyr::select(all_of(c("query", "ROWID_TEMP_")), dplyr::matches("^variable\\d")) %>%
+    tidyr::pivot_longer(cols = !all_of(c("query", "ROWID_TEMP_")), values_to = "variable") %>%
+    dplyr::select(!all_of("name")) %>%
     dplyr::filter(!is.na(.data$variable)) %>%
     dplyr::group_by(.data$ROWID_TEMP_, .data$variable) %>%
     dplyr::summarize(query = paste(.data$query, collapse = "; "), .groups = "drop")
@@ -194,7 +194,7 @@ check_numeric <- function(x,
   x_out <- x_long_raw %>%
     dplyr::filter(is.na(.data$replacement)) %>%
     dplyr::inner_join(q_join, by = c("ROWID_TEMP_", "variable")) %>%
-    dplyr::select(-.data$ROWID_TEMP_) %>%
+    dplyr::select(!all_of("ROWID_TEMP_")) %>%
     unique() %>%
     dplyr::mutate(new = TRUE)
 
@@ -218,7 +218,7 @@ check_numeric <- function(x,
 
     x_out <- dict_clean %>%
       dplyr::mutate(
-        replacement = as.character(replacement),
+        replacement = as.character(.data$replacement),
         new = as.logical(NA)
       ) %>%
       dplyr::bind_rows(x_out_new)

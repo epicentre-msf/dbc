@@ -73,12 +73,12 @@ clean_categorical <- function(x,
 
   # prep dict_allowed
   dict_allowed_std <- dict_allowed %>%
-    dplyr::select(variable = .env$col_allowed_var, value = .env$col_allowed_value)
+    dplyr::select(variable = all_of(col_allowed_var), value = all_of(col_allowed_value))
 
   # pivot vars to long format
   x_long <- x_prep %>%
-    dplyr::select(.data$ROWID_TEMP_, dplyr::any_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", .env$vars_id)), names_to = "variable") %>%
+    dplyr::select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
+    tidyr::pivot_longer(cols = -dplyr::any_of(c("ROWID_TEMP_", vars_id)), names_to = "variable") %>%
     dplyr::mutate(value_std = fn(.data$value))
 
   # apply dictionary-specified replacements
@@ -90,7 +90,8 @@ clean_categorical <- function(x,
 
     dict_clean_join <- dict_clean %>%
       mutate(value_std = fn(.data$value)) %>%
-      dplyr::select(dplyr::any_of(.env$vars_id), .data$variable, .data$value_std, .data$replacement)
+      dplyr::select(dplyr::any_of(vars_id), all_of(c("variable", "value_std", "replacement"))) %>%
+      unique()
 
     x_long <- x_long %>%
       dplyr::left_join(dict_clean_join, by = join_cols) %>%
@@ -113,7 +114,7 @@ clean_categorical <- function(x,
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%
     left_join_replace(x_long_wide, cols_match = "ROWID_TEMP_") %>%
-    dplyr::select(-.data$ROWID_TEMP_)
+    dplyr::select(!all_of("ROWID_TEMP_"))
 
   # return
   return(x_out)

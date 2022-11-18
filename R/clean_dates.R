@@ -62,13 +62,13 @@ clean_dates <- function(x,
 
     # pivot to long form
     x_long_raw <- x %>%
-      dplyr::select(.data$ROWID_TEMP_, dplyr::all_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
-      tidyr::pivot_longer(cols = -dplyr::all_of(c("ROWID_TEMP_", .env$vars_id)), names_to = "variable")
+      dplyr::select(all_of("ROWID_TEMP_"), any_of(vars_id), all_of(vars)) %>%
+      tidyr::pivot_longer(cols = -dplyr::all_of(c("ROWID_TEMP_", vars_id)), names_to = "variable")
 
     # prep dict_clean
     dict_clean_std <- dict_clean %>%
       dplyr::filter(!is.na(.data$replacement)) %>%
-      dplyr::select(dplyr::all_of(.env$vars_id), .data$variable, .data$value, .data$replacement) %>%
+      dplyr::select(dplyr::any_of(vars_id), all_of(c("variable", "value", "replacement"))) %>%
       dplyr::mutate(replacement = as.character(.data$replacement))
 
     # apply corrections
@@ -78,12 +78,12 @@ clean_dates <- function(x,
         value = dplyr::if_else(!is.na(.data$replacement), .data$replacement, .data$value),
         value = dplyr::if_else(.data$value %in% .env$na, NA_character_, .data$value)
       ) %>%
-      dplyr::select(-.data$replacement)
+      dplyr::select(!all_of("replacement"))
 
     x <- x_long_raw %>%
-      tidyr::pivot_wider(id_cols = dplyr::all_of(c("ROWID_TEMP_", .env$vars_id)), names_from = "variable", values_from = "value") %>%
+      tidyr::pivot_wider(id_cols = dplyr::all_of(c("ROWID_TEMP_", vars_id)), names_from = "variable", values_from = "value") %>%
       left_join_replace(x, ., cols_match = c("ROWID_TEMP_", vars_id)) %>%
-      dplyr::select(-.data$ROWID_TEMP_)
+      dplyr::select(!all_of("ROWID_TEMP_"))
   }
 
   # parse dates in wide form

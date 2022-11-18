@@ -60,8 +60,8 @@ check_categorical <- function(x,
   # pivot numeric vars to long format
   x_long <- x %>%
     reclass_cols(cols = vars, fn = as.character) %>%
-    dplyr::select(dplyr::any_of(.env$vars_id), dplyr::all_of(.env$vars)) %>%
-    tidyr::pivot_longer(cols = -dplyr::any_of(.env$vars_id), names_to = "variable")
+    dplyr::select(dplyr::any_of(vars_id), dplyr::all_of(vars)) %>%
+    tidyr::pivot_longer(cols = -dplyr::any_of(vars_id), names_to = "variable")
 
   # standardize
   x_long_std <- x_long %>%
@@ -72,7 +72,7 @@ check_categorical <- function(x,
 
     # prep dict
     dict_clean_std <- dict_clean %>%
-      dplyr::select(dplyr::any_of(.env$vars_id), .data$variable, .data$value, .data$replacement) %>%
+      dplyr::select(dplyr::any_of(vars_id), all_of(c("variable", "value", "replacement"))) %>%
       dplyr::filter(!is.na(.data$replacement)) %>%
       dplyr::mutate(
         replacement = dplyr::case_when(
@@ -94,7 +94,7 @@ check_categorical <- function(x,
 
   # filter to non-valid and non-replaced
   dict_allowed_std <- dict_allowed %>%
-    dplyr::select(variable = .env$col_allowed_var, value = .env$col_allowed_value) %>%
+    dplyr::select(variable = all_of(col_allowed_var), value = all_of(col_allowed_value)) %>%
     dplyr::mutate(value = suppressWarnings(fn(.data$value)))
 
   x_nonvalid <- x_long_std %>%
@@ -111,9 +111,8 @@ check_categorical <- function(x,
 
   x_out <- x_nonvalid %>%
     dplyr::select(
-      dplyr::any_of(.env$vars_id),
-      .data$variable,
-      .data$value
+      dplyr::any_of(vars_id),
+      all_of(c("variable", "value"))
     ) %>%
     dplyr::arrange(.data$variable) %>%
     dplyr::distinct() %>%
