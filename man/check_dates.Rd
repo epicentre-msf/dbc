@@ -26,11 +26,13 @@ corrections should be conditional.}
 
 \item{queries}{Optional list of expressions to check for non-valid dates. May
 include a \code{.x} selector which is a stand-in for any of the date variables
-specified in argument \code{vars}. E.g.\preformatted{list(
+specified in argument \code{vars}. E.g.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{list(
   date_admit > date_exit,  # admission later than exit
   .x > Sys.Date()          # any date in future
 )
-}}
+}\if{html}{\out{</div>}}}
 
 \item{dict_clean}{Optional dictionary of value-replacement pairs (e.g.
 produced by a prior run of \code{\link{check_dates}}). Must include columns

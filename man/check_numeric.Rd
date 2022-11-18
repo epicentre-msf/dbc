@@ -32,11 +32,13 @@ non-valid value, and ID variable.}
 
 \item{queries}{Optional list of expressions to check for non-valid values.
 May include a \code{.x} selector which is a stand-in for any of the numeric
-variables specified in argument \code{vars}. E.g.\preformatted{list(
+variables specified in argument \code{vars}. E.g.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{list(
   age > 110,  # age greater than 110
   .x < 0      # any numeric value less than 0
 )
-}}
+}\if{html}{\out{</div>}}}
 
 \item{dict_clean}{Optional dictionary of value-replacement pairs (e.g. from a
 previous run of this function). Must include columns "variable", "value",
