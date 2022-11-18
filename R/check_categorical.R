@@ -88,7 +88,6 @@ check_categorical <- function(x,
         value = dplyr::if_else(!is.na(.data$replacement), .data$replacement, .data$value),
         value = dplyr::if_else(.data$replacement %in% .env$na, NA_character_, .data$value)
       )
-      # dplyr::select(-.data$replacement_std)
   } else {
     x_long_std$replacement <- NA_character_
   }
@@ -125,9 +124,13 @@ check_categorical <- function(x,
 
   # add original rows of dict to output
   if (return_all & !is.null(dict_clean)) {
+
+    x_out_new <- x_out %>%
+      dplyr::anti_join(dict_clean, by = c(vars_id, "variable", "value"))
+
     x_out <- dict_clean %>%
       dplyr::mutate(new = as.logical(NA)) %>%
-      dplyr::bind_rows(x_out)
+      dplyr::bind_rows(x_out_new)
   }
 
   # return

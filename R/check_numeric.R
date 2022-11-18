@@ -188,7 +188,7 @@ check_numeric <- function(x,
     dplyr::select(-.data$name) %>%
     dplyr::filter(!is.na(.data$variable)) %>%
     dplyr::group_by(.data$ROWID_TEMP_, .data$variable) %>%
-    dplyr::summarize(query = paste(query, collapse = "; "), .groups = "drop")
+    dplyr::summarize(query = paste(.data$query, collapse = "; "), .groups = "drop")
 
   # prep output
   x_out <- x_long_raw %>%
@@ -212,9 +212,16 @@ check_numeric <- function(x,
 
   # add original rows of dict_clean to output
   if (return_all & !is.null(dict_clean)) {
+
+    x_out_new <- x_out %>%
+      dplyr::anti_join(dict_clean, by = c(vars_id, "variable", "value"))
+
     x_out <- dict_clean %>%
-      dplyr::mutate(new = as.logical(NA)) %>%
-      dplyr::bind_rows(x_out)
+      dplyr::mutate(
+        replacement = as.character(replacement),
+        new = as.logical(NA)
+      ) %>%
+      dplyr::bind_rows(x_out_new)
   }
 
   # return

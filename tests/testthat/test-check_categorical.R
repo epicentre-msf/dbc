@@ -49,5 +49,20 @@ test_that("check_categorical works as expected", {
 
   expect_setequal(names(x8), c("variable", "value", "replacement", "new"))
   expect_equal(nrow(x8), 0L)
+
+  # check that rows of dict_clean with no replacement are not duplicated when return_all = T
+  ll <- data.frame(id = 1:2, age_unit = c("year", "Days"))
+  clean_categ <- data.frame(variable = "age_unit", value = "year", replacement = NA_character_, new = as.logical(NA))
+
+  x9 <- check_categorical(
+    ll,
+    dict_categ1,
+    dict_clean = clean_categ,
+    return_all = TRUE
+  )
+
+  expect_equal(clean_categ, x9)
+
+
 })
 

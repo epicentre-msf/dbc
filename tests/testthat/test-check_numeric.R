@@ -42,5 +42,27 @@ test_that("check_numeric works as expected", {
   )
   expect_setequal(x8$query, "age > 60")
 
+  # check that rows of dict_clean with no replacement are not duplicated when return_all = T
+  ll <- data.frame(id = 1:2, x = c("1,2", "9"))
+
+  clean_num <- data.frame(
+    id = 1,
+    variable = "x",
+    value = "1,2",
+    replacement = NA_character_,
+    query = NA_character_,
+    new = as.logical(NA)
+  )
+
+  x9 <- check_numeric(
+    ll,
+    vars = "x",
+    vars_id = "id",
+    dict_clean = clean_num,
+    return_all = TRUE
+  )
+
+  expect_equal(clean_num, x9)
+
 })
 
