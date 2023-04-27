@@ -51,5 +51,18 @@ test_that("clean_categorical works as expected", {
     c("Years", NA, NA, NA, "Days", NA, "Years")
   )
 
+  # test arg non_allowed_to_missing
+  # when non_allowed_to_missing = F, except to standardize where possible,
+  # but otherwise still retain non-allowed values (e.g. age_unit 'Year' or 'Ans')
+  x5 <- clean_categorical(
+    ll1,
+    dict_categ1,
+    non_allowed_to_missing = FALSE
+  )
+  expect_equal(
+    x5$age_unit,
+    c("Years", "Months", NA, "Year", "Days", "Ans", "Years")
+  )
+
 })
 

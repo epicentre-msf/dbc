@@ -58,7 +58,12 @@ reclass_cols <- function(x, cols, fn) {
 
 #' Match dictionary-specified values
 #' @noRd
-match_coded <- function(x, dict, col_var = 1, col_val = 2, fn = std_text) {
+match_coded <- function(x,
+                        dict,
+                        col_var = 1,
+                        col_val = 2,
+                        fn = std_text,
+                        non_allowed_to_missing = TRUE) {
 
   fn <- match.fun(fn)
 
@@ -66,7 +71,12 @@ match_coded <- function(x, dict, col_var = 1, col_val = 2, fn = std_text) {
   common_cols <- intersect(names(dict_split), names(x))
 
   for (j in common_cols) {
-    x[[j]] <- match_coded_vec(x[[j]], dict_split[[j]], fn = fn)
+    x[[j]] <- match_coded_vec(
+      x[[j]],
+      dict_split[[j]],
+      fn = fn,
+      non_allowed_to_missing = non_allowed_to_missing
+    )
   }
 
   x
@@ -76,7 +86,7 @@ match_coded <- function(x, dict, col_var = 1, col_val = 2, fn = std_text) {
 #' @noRd
 #' @importFrom dplyr tibble mutate filter recode
 #' @importFrom rlang `!!!` .data
-match_coded_vec <- function(x, allowed, fn) {
+match_coded_vec <- function(x, allowed, fn, non_allowed_to_missing) {
 
   fn <- match.fun(fn)
 
@@ -87,6 +97,11 @@ match_coded_vec <- function(x, allowed, fn) {
   df_match <- tibble(x_unique, x_unique_std) %>%
     mutate(allowed_match = .env$allowed[match(.data$x_unique_std, .env$allowed_std)]) %>%
     filter(!is.na(.data$x_unique))
+
+  if (!non_allowed_to_missing) {
+    df_match <- df_match %>%
+      filter(!is.na(.data$allowed_match))
+  }
 
   out <- if (nrow(df_match)) {
     recode(x, !!!stats::setNames(df_match$allowed_match, df_match$x_unique))

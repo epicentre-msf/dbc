@@ -12,6 +12,7 @@ clean_categorical(
   vars_id = NULL,
   col_allowed_var = "variable",
   col_allowed_value = "value",
+  non_allowed_to_missing = TRUE,
   fn = std_text,
   na = ".na"
 )
@@ -26,10 +27,7 @@ which can be modified with args \code{col_allowed_var} and \code{col_allowed_val
 \item{dict_clean}{Optional dictionary of value-replacement pairs (e.g.
 produced by \code{\link{check_categorical}}). Must include columns "variable",
 "value", "replacement", and, if specified as an argument, all columns
-specified by \code{vars_id}.
-
-If no dictionary is provided, will simply standardize columns to match
-allowed values specified in \code{dict_allowed}.}
+specified by \code{vars_id}.}
 
 \item{vars_id}{Optional vector of one or more ID columns within \code{x} on which
 corrections should be conditional.
@@ -44,6 +42,13 @@ non-valid value, and ID variable.}
 
 \item{col_allowed_value}{Name of column in \code{dict_allowed} giving allowed
 values (defaults to "value")}
+
+\item{non_allowed_to_missing}{Logical indicating whether to replace values
+that remain non-allowed, even after cleaning and standardization, to NA.
+Defaults to TRUE.
+
+If no dictionary is provided, will simply standardize columns to match
+allowed values specified in \code{dict_allowed}.}
 
 \item{fn}{Function to standardize raw values in both the dataset and
 dictionary prior to comparing, to account for minor variation in character

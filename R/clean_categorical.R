@@ -14,6 +14,9 @@
 #'   produced by [`check_categorical`]). Must include columns "variable",
 #'   "value", "replacement", and, if specified as an argument, all columns
 #'   specified by `vars_id`.
+#' @param non_allowed_to_missing Logical indicating whether to replace values
+#'   that remain non-allowed, even after cleaning and standardization, to NA.
+#'   Defaults to TRUE.
 #'
 #' If no dictionary is provided, will simply standardize columns to match
 #' allowed values specified in `dict_allowed`.
@@ -60,6 +63,7 @@ clean_categorical <- function(x,
                               vars_id = NULL,
                               col_allowed_var = "variable",
                               col_allowed_value = "value",
+                              non_allowed_to_missing = TRUE,
                               fn = std_text,
                               na = ".na") {
 
@@ -104,16 +108,21 @@ clean_categorical <- function(x,
       )
   }
 
-  # TODO: consider option to force remaining non-valid values to NA
-
   # pivot corrected numeric vars to wide form
   x_long_wide <- x_long %>%
-    tidyr::pivot_wider(id_cols = "ROWID_TEMP_", names_from = "variable", values_from = "value") %>%
-    match_coded(dict = dict_allowed_std, fn = fn)
+    tidyr::pivot_wider(id_cols = "ROWID_TEMP_", names_from = "variable", values_from = "value")
+
+  # standardize values and match to dict_allowed
+  x_long_wide_match <- x_long_wide %>%
+    match_coded(
+      dict = dict_allowed_std,
+      fn = fn,
+      non_allowed_to_missing = non_allowed_to_missing
+    )
 
   # merge corrected vars back into original dataset
   x_out <- x_prep %>%
-    left_join_replace(x_long_wide, cols_match = "ROWID_TEMP_") %>%
+    left_join_replace(x_long_wide_match, cols_match = "ROWID_TEMP_") %>%
     select(!all_of("ROWID_TEMP_"))
 
   # return
