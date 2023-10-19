@@ -16,7 +16,7 @@ options(digits = 4, width = 120)
 # dbc: Dictionary-based cleaning
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![R-CMD-check](https://github.com/epicentre-msf/dbc/workflows/R-CMD-check/badge.svg)](https://github.com/epicentre-msf/dbc/actions)
+[![R-CMD-check](https://github.com/epicentre-msf/dbc/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/epicentre-msf/dbc/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 Tools for creating and applying dictionaries of value-replacement pairs, to

@@ -7,7 +7,7 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![R-CMD-check](https://github.com/epicentre-msf/dbc/workflows/R-CMD-check/badge.svg)](https://github.com/epicentre-msf/dbc/actions)
+[![R-CMD-check](https://github.com/epicentre-msf/dbc/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/epicentre-msf/dbc/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 Tools for creating and applying dictionaries of value-replacement pairs,
@@ -39,7 +39,7 @@ ll1
 #> 1 M143  14    Years    M     Suspected  22       43920      2020-04-01 2021.04.02 <NA>       
 #> 2 M345  8     months   F     ?          ten      43924      April 2020 43940      SENT HOME  
 #> 3 M104  29    <NA>     -     confirmed  15       <NA>       03_04_2020 43932      Died       
-#> 4 M623  91    Year     -     Confirmed  <NA>     2020-04-10 2020-04-12 Unknown    Cure       
+#> 4 M623  91    Year     -     Confirmed  <NA>     2022-04-10 2020-04-12 Unknown    Cure       
 #> 5 M685  ?     Days     F     suspect    Not sure <NA>       <NA>       43918      <NA>       
 #> 6 M550  39..  Ans      Homme Probable   31       43946      43951      43964      <NA>       
 #> 7 M190  66    Years    M     Not a case 17       24/04/2020 43952      43941      Sent home
@@ -57,13 +57,13 @@ dict_clean_numeric <- check_numeric(
 )
 
 dict_clean_numeric
-#> # A tibble: 4 × 4
-#>   variable value    replacement new  
-#>   <chr>    <chr>    <chr>       <lgl>
-#> 1 age      ?        <NA>        TRUE 
-#> 2 age      39..     <NA>        TRUE 
-#> 3 contacts ten      <NA>        TRUE 
-#> 4 contacts Not sure <NA>        TRUE
+#> # A tibble: 4 × 5
+#>   variable value    replacement query            new  
+#>   <chr>    <chr>    <chr>       <chr>            <lgl>
+#> 1 contacts ten      <NA>        Non-valid number TRUE 
+#> 2 age      ?        <NA>        Non-valid number TRUE 
+#> 3 contacts Not sure <NA>        Non-valid number TRUE 
+#> 4 age      39..     <NA>        Non-valid number TRUE
 ```
 
 ##### 2. Manually review non-valid values and give appropriate replacements, or use keyword “.na” to indicate that the value has been reviewed and cannot be corrected.
@@ -88,11 +88,11 @@ clean_numeric(
 #>   id      age age_unit sex   status     contacts date_onset date_admit date_exit  exit_status
 #>   <chr> <int> <chr>    <chr> <chr>         <int> <chr>      <chr>      <chr>      <chr>      
 #> 1 M143     14 Years    M     Suspected        22 43920      2020-04-01 2021.04.02 <NA>       
-#> 2 M345      8 months   F     ?                10 43924      April 2020 43940      SENT HOME  
+#> 2 M345      8 months   F     ?                NA 43924      April 2020 43940      SENT HOME  
 #> 3 M104     29 <NA>     -     confirmed        15 <NA>       03_04_2020 43932      Died       
-#> 4 M623     91 Year     -     Confirmed        NA 2020-04-10 2020-04-12 Unknown    Cure       
-#> 5 M685     NA Days     F     suspect          NA <NA>       <NA>       43918      <NA>       
-#> 6 M550     39 Ans      Homme Probable         31 43946      43951      43964      <NA>       
+#> 4 M623     91 Year     -     Confirmed        NA 2022-04-10 2020-04-12 Unknown    Cure       
+#> 5 M685     39 Days     F     suspect          10 <NA>       <NA>       43918      <NA>       
+#> 6 M550     NA Ans      Homme Probable         31 43946      43951      43964      <NA>       
 #> 7 M190     66 Years    M     Not a case       17 24/04/2020 43952      43941      Sent home
 ```
 
@@ -111,14 +111,14 @@ dict_clean_numeric_update <- check_numeric(
 )
 
 dict_clean_numeric_update
-#> # A tibble: 5 × 4
-#>   variable value    replacement new  
-#>   <chr>    <chr>    <chr>       <lgl>
-#> 1 age      ?        .na         NA   
-#> 2 age      39..     39          NA   
-#> 3 contacts ten      10          NA   
-#> 4 contacts Not sure .na         NA   
-#> 5 age      6 years  <NA>        TRUE
+#> # A tibble: 5 × 5
+#>   variable value    replacement query            new  
+#>   <chr>    <chr>    <chr>       <chr>            <lgl>
+#> 1 contacts ten      .na         Non-valid number NA   
+#> 2 age      ?        39          Non-valid number NA   
+#> 3 contacts Not sure 10          Non-valid number NA   
+#> 4 age      39..     .na         Non-valid number NA   
+#> 5 age      6 years  <NA>        Non-valid number TRUE
 ```
 
 *Manually specify replacement for new non-valid entry*
@@ -140,11 +140,11 @@ clean_numeric(
 #>    id      age age_unit sex   status     contacts date_onset date_admit date_exit  exit_status
 #>    <chr> <int> <chr>    <chr> <chr>         <int> <chr>      <chr>      <chr>      <chr>      
 #>  1 M143     14 Years    M     Suspected        22 43920      2020-04-01 2021.04.02 <NA>       
-#>  2 M345      8 months   F     ?                10 43924      April 2020 43940      SENT HOME  
+#>  2 M345      8 months   F     ?                NA 43924      April 2020 43940      SENT HOME  
 #>  3 M104     29 <NA>     -     confirmed        15 <NA>       03_04_2020 43932      Died       
-#>  4 M623     91 Year     -     Confirmed        NA 2020-04-10 2020-04-12 Unknown    Cure       
-#>  5 M685     NA Days     F     suspect          NA <NA>       <NA>       43918      <NA>       
-#>  6 M550     39 Ans      Homme Probable         31 43946      43951      43964      <NA>       
+#>  4 M623     91 Year     -     Confirmed        NA 2022-04-10 2020-04-12 Unknown    Cure       
+#>  5 M685     39 Days     F     suspect          10 <NA>       <NA>       43918      <NA>       
+#>  6 M550     NA Ans      Homme Probable         31 43946      43951      43964      <NA>       
 #>  7 M190     66 Years    M     Not a case       17 24/04/2020 43952      43941      Sent home  
 #>  8 M443     10 Months   F     Confirmed        26 <NA>       43900      43926      Cured      
 #>  9 M206      6 Years    f     Conf.             7 43921      43923      ?          dead       
@@ -205,7 +205,7 @@ clean_categorical(
 #> 1 M143  14    Years    M     Suspected  22       43920      2020-04-01 2021.04.02 <NA>       
 #> 2 M345  8     Months   F     <NA>       ten      43924      April 2020 43940      Sent home  
 #> 3 M104  29    <NA>     <NA>  Confirmed  15       <NA>       03_04_2020 43932      Died       
-#> 4 M623  91    Years    <NA>  Confirmed  <NA>     2020-04-10 2020-04-12 Unknown    Cured      
+#> 4 M623  91    Years    <NA>  Confirmed  <NA>     2022-04-10 2020-04-12 Unknown    Cured      
 #> 5 M685  ?     Days     F     Suspected  Not sure <NA>       <NA>       43918      <NA>       
 #> 6 M550  39..  Years    M     Probable   31       43946      43951      43964      <NA>       
 #> 7 M190  66    Years    M     Not a case 17       24/04/2020 43952      43941      Sent home
