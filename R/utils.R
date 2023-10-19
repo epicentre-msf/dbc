@@ -84,9 +84,11 @@ match_coded <- function(x,
 
 
 #' @noRd
-#' @importFrom dplyr tibble mutate filter recode
-#' @importFrom rlang `!!!` .data
-match_coded_vec <- function(x, allowed, fn, non_allowed_to_missing) {
+#' @importFrom dplyr tibble mutate filter
+match_coded_vec <- function(x,
+                            allowed,
+                            fn = std_text,
+                            non_allowed_to_missing = TRUE) {
 
   fn <- match.fun(fn)
 
@@ -103,11 +105,9 @@ match_coded_vec <- function(x, allowed, fn, non_allowed_to_missing) {
       filter(!is.na(.data$allowed_match))
   }
 
-  out <- if (nrow(df_match)) {
-    recode(x, !!!stats::setNames(df_match$allowed_match, df_match$x_unique))
-  } else {
-    x
-  }
+  m <- match(x, df_match$x_unique)
+  out <- x
+  out[!is.na(m)] <- df_match$allowed_match[m[!is.na(m)]]
 
   return(out)
 }
