@@ -7,6 +7,7 @@
 parse_dates(
   x,
   convert_excel = TRUE,
+  as_date = TRUE,
   orders = c("Ymd", "dmY", "dmy", "mdY", "Ymd HMS")
 )
 }
@@ -15,6 +16,10 @@ parse_dates(
 
 \item{convert_excel}{Logical indicating whether to convert Excel-encoded date
 values (e.g. "42370") into dates, using \link[janitor:excel_numeric_to_date]{janitor::excel_numeric_to_date}}
+
+\item{as_date}{Logical indicating whether to convert to Date class using
+\link[lubridate:as_date]{lubridate::as_date}, which will quietly force any non-parseable date value
+to NA. Defaults to TRUE.}
 
 \item{orders}{a character vector of date-time formats. Each order string is
 a series of formatting characters as listed in \code{\link[base:strptime]{base::strptime()}} but
@@ -26,8 +31,10 @@ for \code{parse_date_time2()} and \code{fast_strptime()}. For \code{parse_date_t
 the order of applied formats is determined by \code{select_formats} parameter.}
 }
 \value{
-A vector of class "Date". Values that cannot be converted to valid dates will
-be returned as \verb{<NA>}.
+If argument \code{as_date} is \code{TRUE}, a vector of class "Date", with values that
+cannot be converted to valid dates returned as \verb{<NA>}. Else a vector of class
+"character" with values that cannot be converted to valid dates retained as
+is.
 }
 \description{
 Parse dates

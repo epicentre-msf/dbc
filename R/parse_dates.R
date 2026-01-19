@@ -5,10 +5,15 @@
 #' @param x A character or numeric vector of dates
 #' @param convert_excel Logical indicating whether to convert Excel-encoded date
 #'   values (e.g. "42370") into dates, using [janitor::excel_numeric_to_date]
+#' @param as_date Logical indicating whether to convert to Date class using
+#'   [lubridate::as_date], which will quietly force any non-parseable date value
+#'   to NA. Defaults to TRUE.
 #'
 #' @return
-#' A vector of class "Date". Values that cannot be converted to valid dates will
-#' be returned as `<NA>`.
+#' If argument `as_date` is `TRUE`, a vector of class "Date", with values that
+#' cannot be converted to valid dates returned as `<NA>`. Else a vector of class
+#' "character" with values that cannot be converted to valid dates retained as
+#' is.
 #'
 #' @examples
 #' x <- c("44087", "12//02/2019", "2020_05_14", "2021-01-30 14:00:04")
@@ -18,11 +23,13 @@
 #' @export parse_dates
 parse_dates <- function(x,
                         convert_excel = TRUE,
+                        as_date = TRUE,
                         orders = c("Ymd", "dmY", "dmy", "mdY", "Ymd HMS")) {
   x <- as.character(x)
   if (convert_excel) x <- parse_excel_dates(x)
   x <- parse_other_dates(x, orders = orders)
-  suppressWarnings(lubridate::as_date(x))
+  if (as_date) x <- suppressWarnings(lubridate::as_date(x))
+  x
 }
 
 
