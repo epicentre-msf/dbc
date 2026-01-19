@@ -20,9 +20,9 @@
 #' @param vars Names of date columns within `x` to check
 #' @param vars_id Vector of one or more ID columns within `x` on which
 #'   corrections should be conditional.
-#' @param queries Optional list of expressions to check for non-valid dates. May
-#'   include a `.x` selector which is a stand-in for any of the date variables
-#'   specified in argument `vars`. E.g.
+#' @param queries Optional list or alist of expressions to check for non-valid
+#'   dates. May include a `.x` selector which is a stand-in for any of the date
+#'   variables specified in argument `vars`. E.g.
 #' ```
 #' list(
 #'   date_admit > date_exit,  # admission later than exit
@@ -87,15 +87,16 @@
 #' @importFrom queryr query
 #' @importFrom stats setNames
 #' @export check_dates
-check_dates <- function(x,
-                        vars,
-                        vars_id,
-                        queries = list(),
-                        dict_clean = NULL,
-                        fn = parse_dates,
-                        na = ".na",
-                        populate_na = FALSE) {
-
+check_dates <- function(
+  x,
+  vars,
+  vars_id,
+  queries = list(),
+  dict_clean = NULL,
+  fn = parse_dates,
+  na = ".na",
+  populate_na = FALSE
+) {
   fn <- match.fun(fn)
 
   # check dict_clean
@@ -113,7 +114,6 @@ check_dates <- function(x,
 
   # apply existing dictionary-based corrections, if specified
   if (!is.null(dict_clean)) {
-
     # prep dict_clean
     dict_clean_std <- dict_clean %>%
       filter(!is.na(.data$replacement)) %>%
@@ -143,15 +143,24 @@ check_dates <- function(x,
     mutate(date = suppressWarnings(fn(.data$value)), replacement = NA_character_)
 
   # parse query expressions
-  queries_chr <- vapply(substitute(queries), function (x) deparse(x, width.cutoff = 500L), "")
+  queries_sub <- substitute(queries)
 
-  if (!"list" %in% queries_chr) {
-    # TODO: come up with better approach here
-    stop("Argument `queries` must be a list of expressions", call. = FALSE)
+  # If queries is a symbol (variable name), evaluate it and extract elements
+  if (is.name(queries_sub)) {
+    queries_list <- eval(queries_sub, parent.frame())
+    queries_sub <- as.list(queries_list) # convert to regular list
+    queries_chr <- vapply(queries_sub, function(x) deparse(x, width.cutoff = 500L), "")
+
+    # handle both list() and alist() when written inline
+  } else if (is.call(queries_sub) && as.character(queries_sub[[1]]) %in% c("list", "alist")) {
+    queries_sub <- queries_sub[-1] # remove the 'list' or 'alist' call
+    queries_chr <- vapply(queries_sub, function(x) deparse(x, width.cutoff = 500L), "")
+  } else {
+    stop("Argument `queries` must be a list() or alist() of expressions", call. = FALSE)
   }
 
-  queries_dotx <- substitute(queries)[has_dotx(queries_chr)]
-  queries_no_dotx <- substitute(queries)[!has_dotx(queries_chr) & !queries_chr %in% "list"]
+  queries_dotx <- queries_sub[has_dotx(queries_chr)]
+  queries_no_dotx <- queries_sub[!has_dotx(queries_chr)]
 
   # non-valid dates
   q_nonvalid <- queryr::query(
@@ -222,9 +231,7 @@ check_dates <- function(x,
 }
 
 
-
 #' @noRd
 has_dotx <- function(exprs) {
   vapply(exprs, function(x) ".x" %in% all.vars(parse(text = x)), FALSE)
 }
-

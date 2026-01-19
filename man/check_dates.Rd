@@ -24,9 +24,9 @@ check_dates(
 \item{vars_id}{Vector of one or more ID columns within \code{x} on which
 corrections should be conditional.}
 
-\item{queries}{Optional list of expressions to check for non-valid dates. May
-include a \code{.x} selector which is a stand-in for any of the date variables
-specified in argument \code{vars}. E.g.
+\item{queries}{Optional list or alist of expressions to check for non-valid
+dates. May include a \code{.x} selector which is a stand-in for any of the date
+variables specified in argument \code{vars}. E.g.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{list(
   date_admit > date_exit,  # admission later than exit
