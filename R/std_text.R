@@ -20,9 +20,13 @@
 #' @importFrom stringi stri_trans_general
 #' @export std_text
 std_text <- function(x) {
-  x %>%
-    tolower(.) %>%
-    stringi::stri_trans_general(., id = "Latin-ASCII") %>%
-    gsub("^[[:punct:]|[:space:]]+(?=[[:alnum:]])|(?<=[[:alnum:]])[[:punct:]|[:space:]]+$", "", ., perl = TRUE) %>%
-    gsub("\\s+", " ", .)
+  x <- tolower(x)
+  has_non_ascii <- grepl("[^\\p{ASCII}]", x, perl = TRUE)
+  if (any(has_non_ascii)) {
+    x[has_non_ascii] <- stringi::stri_trans_general(x[has_non_ascii], id = "Latin-ASCII")
+  }
+  # fmt: skip
+  x <- gsub("^[[:punct:]|[:space:]]+(?=[[:alnum:]])|(?<=[[:alnum:]])[[:punct:]|[:space:]]+$", "", x, perl = TRUE)
+  x <- gsub("\\s+", " ", x)
+  return(x)
 }
