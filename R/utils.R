@@ -1,18 +1,17 @@
-
 utils::globalVariables(c("."))
 utils::globalVariables(c(".x"))
 
 
 #' @noRd
 test_dict <- function(dict, fn, na) {
-
   replace_std <- suppressWarnings(fn(dict$replacement))
   is_non_valid <- !is.na(dict$replacement) & is.na(replace_std) & !dict$replacement %in% na
   if (any(is_non_valid)) {
     non_valid <- unique(dict$replacement[is_non_valid])
     warning(
       "The following values of 'dict$replacement' are non-valid and will be converted to <NA>: ",
-      paste_collapse(non_valid), call. = FALSE
+      paste_collapse(non_valid),
+      call. = FALSE
     )
   }
 }
@@ -34,7 +33,6 @@ paste_collapse <- function(x, quote = TRUE, collapse = ", ") {
 #' @importFrom dplyr `%>%` select left_join all_of
 #' @importFrom rlang `!!!`
 left_join_replace <- function(x, y, cols_match) {
-
   cols_orig_x <- names(x)
   cols_replace <- setdiff(names(y), cols_match)
   cols_keep <- setdiff(names(x), cols_replace)
@@ -73,13 +71,7 @@ reclass_cols_date <- function(x, cols, fn, fn_final = lubridate::as_date) {
 
 #' Match dictionary-specified values
 #' @noRd
-match_coded <- function(x,
-                        dict,
-                        col_var = 1,
-                        col_val = 2,
-                        fn = std_text,
-                        non_allowed_to_missing = TRUE) {
-
+match_coded <- function(x, dict, col_var = 1, col_val = 2, fn = std_text, non_allowed_to_missing = TRUE) {
   fn <- match.fun(fn)
 
   dict_split <- split(dict[[col_val]], dict[[col_var]])
@@ -100,16 +92,12 @@ match_coded <- function(x,
 
 #' @noRd
 #' @importFrom dplyr tibble mutate filter
-match_coded_vec <- function(x,
-                            allowed,
-                            fn = std_text,
-                            non_allowed_to_missing = TRUE) {
-
+match_coded_vec <- function(x, allowed, fn = std_text, non_allowed_to_missing = TRUE) {
   fn <- match.fun(fn)
 
   x_unique <- unique(x)
-  x_unique_std <-  fn(x_unique)
-  allowed_std <-  fn(allowed)
+  x_unique_std <- fn(x_unique)
+  allowed_std <- fn(allowed)
 
   df_match <- tibble(x_unique, x_unique_std) %>%
     mutate(allowed_match = .env$allowed[match(.data$x_unique_std, .env$allowed_std)]) %>%
@@ -126,4 +114,3 @@ match_coded_vec <- function(x,
 
   return(out)
 }
-
