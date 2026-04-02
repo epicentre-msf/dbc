@@ -83,6 +83,7 @@
 #' @importFrom dplyr `%>%` select filter mutate any_of all_of matches bind_rows
 #'   if_else left_join anti_join semi_join group_by summarize
 #' @importFrom tidyr pivot_longer pivot_wider
+#' @importFrom lubridate as_date
 #' @importFrom rlang .data .env
 #' @importFrom queryr query
 #' @importFrom stats setNames
@@ -136,11 +137,19 @@ check_dates <- function(
 
   # parse dates in wide form
   x_wide_parse <- x %>%
-    reclass_cols(cols = vars, fn = fn)
+    reclass_cols(cols = vars, fn = as.character) %>%
+    reclass_cols_date(cols = vars, fn = fn)
 
   # parse dates in long-form
+  unique_values <- unique(x_long_raw$value)
+  unique_values_date_chr <- as.character(suppressWarnings(fn(unique_values)))
+  value_map <- stats::setNames(unique_values_date_chr, unique_values)
+
   x_long_parse <- x_long_raw %>%
-    mutate(date = suppressWarnings(fn(.data$value)), replacement = NA_character_)
+    mutate(
+      date = lubridate::as_date(value_map[.data$value]),
+      replacement = NA_character_
+    )
 
   # parse query expressions
   queries_sub <- substitute(queries)
@@ -163,12 +172,13 @@ check_dates <- function(
   queries_no_dotx <- queries_sub[!has_dotx(queries_chr)]
 
   # non-valid dates
-  q_nonvalid <- queryr::query(
-    data = x,
-    !is.na(.x) & is.na(fn(.x)),
-    cols_dotx = all_of(vars),
-    cols_base = all_of(vars_id_join)
-  ) %>%
+  q_nonvalid <- x_long_parse |>
+    filter(!is.na(.data$value) & is.na(.data$date)) |>
+    select(
+      all_of(vars_id_join),
+      variable1 = "variable",
+      value1 = "value"
+    ) |>
     list() %>%
     stats::setNames("Non-valid date")
 

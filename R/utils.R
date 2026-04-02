@@ -55,6 +55,21 @@ reclass_cols <- function(x, cols, fn) {
   return(x)
 }
 
+#' @noRd
+#' @importFrom lubridate as_date
+reclass_cols_date <- function(x, cols, fn, fn_final = lubridate::as_date) {
+  fn <- match.fun(fn)
+  fn_final <- match.fun(fn_final)
+
+  for (j in cols) {
+    vals_unique <- unique(x[[j]])
+    vals_unique_std <- suppressWarnings(fn(vals_unique))
+    value_map <- stats::setNames(vals_unique_std, vals_unique)
+    x[[j]] <- fn_final(value_map[x[[j]]])
+  }
+  return(x)
+}
+
 
 #' Match dictionary-specified values
 #' @noRd
