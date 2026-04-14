@@ -42,18 +42,19 @@
 #' @importFrom tidyr pivot_longer
 #' @importFrom rlang .data .env
 #' @export check_categorical
-check_categorical <- function(x,
-                              dict_allowed,
-                              dict_clean = NULL,
-                              vars_id = NULL,
-                              col_allowed_var = "variable",
-                              col_allowed_value = "value",
-                              fn = std_text,
-                              allow_na = TRUE,
-                              na = ".na",
-                              populate_na = FALSE,
-                              return_all = FALSE) {
-
+check_categorical <- function(
+  x,
+  dict_allowed,
+  dict_clean = NULL,
+  vars_id = NULL,
+  col_allowed_var = "variable",
+  col_allowed_value = "value",
+  fn = std_text,
+  allow_na = TRUE,
+  na = ".na",
+  populate_na = FALSE,
+  return_all = FALSE
+) {
   fn <- match.fun(fn)
   vars <- intersect(unique(dict_allowed[[col_allowed_var]]), names(x))
 
@@ -61,15 +62,19 @@ check_categorical <- function(x,
   x_long <- x %>%
     reclass_cols(cols = vars, fn = as.character) %>%
     select(any_of(vars_id), all_of(vars)) %>%
-    tidyr::pivot_longer(cols = -any_of(vars_id), names_to = "variable")
+    tidyr::pivot_longer(cols = -any_of(vars_id), names_to = "variable") |>
+    distinct()
 
   # standardize
+  unique_values <- unique(x_long$value)
+  value_std <- suppressWarnings(fn(unique_values))
+  value_map <- stats::setNames(value_std, unique_values)
+
   x_long_std <- x_long %>%
-    mutate(value = suppressWarnings(fn(.data$value)))
+    mutate(value = value_map[.data$value])
 
   # apply existing dictionary-based corrections, if specified
   if (!is.null(dict_clean)) {
-
     # prep dict
     dict_clean_std <- dict_clean %>%
       select(any_of(vars_id), all_of(c("variable", "value", "replacement"))) %>%
@@ -85,8 +90,11 @@ check_categorical <- function(x,
     x_long_std <- x_long_std %>%
       left_join(dict_clean_std, by = c(vars_id, "variable", "value")) %>%
       mutate(
-        value = if_else(!is.na(.data$replacement), .data$replacement, .data$value),
-        value = if_else(.data$replacement %in% .env$na, NA_character_, .data$value)
+        value = case_when(
+          !is.na(.data$replacement) & .data$replacement %in% .env$na ~ NA_character_,
+          !is.na(.data$replacement) ~ .data$replacement,
+          TRUE ~ .data$value
+        )
       )
   } else {
     x_long_std$replacement <- NA_character_
@@ -123,7 +131,6 @@ check_categorical <- function(x,
 
   # add original rows of dict to output
   if (return_all & !is.null(dict_clean)) {
-
     x_out_new <- x_out %>%
       anti_join(dict_clean, by = c(vars_id, "variable", "value"))
 
@@ -135,4 +142,3 @@ check_categorical <- function(x,
   # return
   return(x_out)
 }
-
