@@ -2,4 +2,6 @@
 ^\.Rproj\.user$
 ^data-raw$
 ^README\.Rmd$
+^air\.toml$
 ^\.github$
+^\.vscode$

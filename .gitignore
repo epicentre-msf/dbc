@@ -1,4 +1,5 @@
 .Rproj.user
-data-raw
 .DS_Store
 .Rhistory
+.vscode/
+data-raw/
